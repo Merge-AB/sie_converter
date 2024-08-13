@@ -7,8 +7,12 @@ import datetime
 
 
 # Sätter directory
-directory = os.getcwd()
-directory2 = "Output-filer"
+
+
+path = os.getcwd()
+print(path)
+directory = path
+directory2 = path + "\\Output-filer"
 #os.chdir(directory2) för att sätta outputfilerna i rätt mapp
 os.chdir(directory2)
 os.getcwd() 
@@ -16,7 +20,7 @@ os.getcwd()
 print("initiating...")
 
 #Skapar en CSV fil
-outputFil1 = open("TRANSACTIONS.csv", "w", newline="", encoding='ANSI')
+outputFil1 = open("TRANSACTIONS.csv", "w", newline="", encoding='cp437')
 outputWriter1 = csv.writer(outputFil1, delimiter=",")
 #Skriver toppraderna
 trans_topp = ['serie', 'ver_nr', 'ver_datum', 'ver_text', 'reg_datum', 'konto', 'belopp', 'kostnadsställe', 'trans_typ', 'belopp_2']
@@ -45,7 +49,6 @@ outputWriter_RES.writerow(res_topp)
 
 #Skapar en CSV fil
 outputFil_PSALDO = open("PSALDO.csv", "w", newline="", encoding='ANSI')
-
 outputWriter_PSALDO = csv.writer(outputFil_PSALDO, delimiter=",")
 #Skriver toppraderna
 psaldo_topp = ['DEL', 'DEL', 'datum', 'konto', 'UB', 'DEL']
@@ -74,7 +77,7 @@ class Master:
 		line = self.line
 		outputWriter_UB = self.outputWriter_UB
 		#Hittar alla Utgående Balans och sammanställer dem i en .csv
-		if line.startswith("#UB"):
+		if line.startswith("#UB 0"):
 			line = line.replace(",","")
 			splitted_UB_line = line.split()
 			splitted_UB_line[-1] = splitted_UB_line[-1].rstrip()
@@ -84,7 +87,7 @@ class Master:
 		line = self.line
 		outputWriter_IB = self.outputWriter_IB
 		#Hittar alla Ingående Balans och sammanställer dem i en .csv
-		if line.startswith("#IB"):
+		if line.startswith("#IB 0"):
 			line = line.replace(",","")
 			splitted_IB_line = line.split()
 			splitted_IB_line[-1] = splitted_IB_line[-1].rstrip()
@@ -155,20 +158,14 @@ class Master:
 			# Här formaterar vi en lista så att allt blir lättåtkomligt i kommande funktioner
 			ver = ver.replace(",","")
 			ver = ver.replace('\\',"") 
-			ver = ver.replace('"','')
+			#ver = ver.replace('"','')
 			ver = ver.replace("'",'')
 
 			lista = []
+		
 			ver = ver.split()
 			for x in ver[1:]:
 				lista.append(x)
-			
-			#I fall med SIE filer är listan för kort, lägger till "NI" som sakans i SIE datan
-			if lista[0] != "NI":
-				print(lista)
-				l = ["NI"]
-				l.extend(lista)
-			lista = l
 
 			# Undersöker om sista elementet i listan är ett datum. Detta är centralt!
 			date_string = lista[-1]
@@ -198,7 +195,8 @@ class Master:
 			fourth = False
 			fifth = False
 
-			# Kolla var det första datumet i listan ligger i listan. Detta är också avgörande för hur listan ska delas upp
+			# Kolla var det första datumet i listan ligger i listan. Detta är också avgörande för hur listan ska delas up
+
 			try:
 				if len(third_ele) == 8 and third_ele.startswith('20') == True:
 					datetime.datetime.strptime(third_ele, format)
