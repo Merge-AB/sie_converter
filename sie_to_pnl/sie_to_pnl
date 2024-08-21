@@ -1,0 +1,67 @@
+import pandas as pd
+from datetime import datetime
+from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Border, Side, Alignment
+
+# Läs in CSV-filer
+ib_df = pd.read_csv('sie_to_pnl/data/IB.csv', encoding='ascii')
+konto_df = pd.read_csv('sie_to_pnl/data/KONTO.csv', encoding='ISO-8859-1')
+res_df = pd.read_csv('sie_to_pnl/data/RES.csv', encoding='ISO-8859-1')  # Läser in RES.csv
+
+# Hämta endast kontonummer från IB.csv
+ib_accounts = ib_df['konto'].unique()
+
+# Filtrera konto_df baserat på kontonummer i IB.csv
+filtered_konto_df = konto_df[konto_df['kontonummer'].isin(ib_accounts)]
+
+# Lägg till konton från RES.csv till output DataFrame
+res_accounts = res_df[['konto']].drop_duplicates()
+res_accounts = res_accounts.rename(columns={'konto': 'account_number'})
+res_accounts['account_title'] = res_accounts['account_number'].map(
+    lambda x: konto_df[konto_df['kontonummer'] == x]['kontonamn'].values[0] if x in konto_df['kontonummer'].values else ''
+)
+res_accounts['zero_acc'] = ''
+
+# Lägg till konton från RES.csv under de befintliga kontona
+output_df = pd.concat([filtered_konto_df, res_accounts])
+
+# Skapa filnamn baserat på aktuell tid
+current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+output_filename = f'sie_to_pnl_output_{current_time}.xlsx'
+
+# Spara till en Excel-fil
+output_df.to_excel(f'sie_to_pnl/data/{output_filename}', sheet_name='Accounts', index=False)
+
+# Öppna filen igen för att modifiera den
+wb = load_workbook(f'sie_to_pnl/data/{output_filename}')
+ws = wb['Accounts']
+
+# Auto-resize kolumnbredd
+for col in ws.columns:
+    max_length = 0
+    column = col[0].column_letter  # Get the column name
+    for cell in col:
+        try:
+            if len(str(cell.value)) > max_length:
+                max_length = len(cell.value)
+        except:
+            pass
+    adjusted_width = max_length + 2
+    ws.column_dimensions[column].width = adjusted_width
+
+# Ta bort borders från rubrikraden och vänsterjustera texten
+thin_border = Border(left=Side(style=None),
+                     right=Side(style=None),
+                     top=Side(style=None),
+                     bottom=Side(style=None))
+
+for cell in ws[1]:
+    cell.border = thin_border
+    cell.alignment = Alignment(horizontal='left')  # Vänsterjustera texten
+
+# Spara ändringarna
+wb.save(f'sie_to_pnl/data/{output_filename}')
+wb.close()
+
+print(f'Excel file saved as {output_filename}')
