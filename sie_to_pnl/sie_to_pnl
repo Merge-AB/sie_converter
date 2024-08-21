@@ -1,0 +1,28 @@
+import pandas as pd
+from datetime import datetime
+
+# Läs in CSV-filer
+ib_df = pd.read_csv('sie_to_pnl/data/IB.csv')
+konto_df = pd.read_csv('sie_to_pnl/data/KONTO.csv', encoding='ISO-8859-1')
+
+# Hämta endast kontonummer från IB.csv
+ib_accounts = ib_df['konto'].unique()
+
+# Filtrera konto_df baserat på kontonummer i IB.csv
+filtered_konto_df = konto_df[konto_df['kontonummer'].isin(ib_accounts)]
+
+# Skapa den slutliga DataFramen
+output_df = pd.DataFrame({
+    'account_number': filtered_konto_df['kontonummer'],
+    'account_title': filtered_konto_df['kontonamn'],
+    'zero_acc': ''
+})
+
+# Skapa output
+current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+output_filename = f'sie_to_pnl_output_{current_time}.xlsx'
+
+# Spara till en Excel-fil
+output_df.to_excel(f'sie_to_pnl/data/{output_filename}', sheet_name='Accounts', index=False)
+
+print(f'Excel file saved as {output_filename}')
