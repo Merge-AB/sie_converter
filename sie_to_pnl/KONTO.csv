@@ -1,0 +1,278 @@
+kontonummer,kontonamn
+1012,Balanserade utgifter för programvaror
+1019,Ackumulerade avskrivningar på balanserade utgifter
+1040,Licenser
+1049,Ackumulerade avskrivningar på licenser
+1050,Varumärken
+1059,Ackumulerade avskrivningar på varumärken
+1220,Inventarier och verktyg
+1229,Ack avskrivn inv/verktyg
+1312,Aktieägartillskott Mockberg China
+1383,Lämnade depositioner långfristiga
+1410,Lager av råvaror
+1411,Varor på väg
+1419,Förändring av lager av råvaror
+1440,Produkter i arbete
+1450,Lager av färdiga varor SWE + HK
+1451,Lager av varor Aiers
+1459,Förändring av lager av färdiga varor
+1469,Förändring av lager i Ongoing ej i Visma.net
+1483,Förskottsbetalning USD
+1502,Kundfordringar - Tictail Paypal USD
+1510,Kundfordringar - Företagskunder
+1511,Kundfordringar - Webbkunder
+1516,Tvistiga kundfordringar
+1517,Kundfordringar äldre system
+1519,Nedskrivning av kundfordringar
+1527,Kundfordringar hemsidan Alla valutor
+1610,Kortfristiga fordringar hos anställda
+1619,Avräkning löner
+1630,Avräkning för skatter och avgifter (skattekonto)
+1640,Skattefordringar
+1650,Momsfordran
+1670,Avräkning Tipser
+1671,Avräkning Klarna
+1672,Avräkning Adyen
+1673,Avräkning Stripe
+1674,Fordringar Paypal TWD
+1675,Fordringar Paypal GBP
+1676,Fordringar Paypal USD
+1677,Fordringar Paypal NOK
+1678,Fordringar Adyen
+1679,Fordringar Paypal AUD
+1680,Andra kortfristiga fordringar
+1681,Fordringar Paypal SEK
+1682,Fordringar Paypal EUR
+1683,Fordringar Paypal valutor - SEK
+1684,Kortfristiga fordringar hos leverantörer
+1685,Fordringar Paypal GBP
+1686,Fordringar Paypal USD
+1687,Fordringar Paypal NOK
+1688,Fordringar Paypal DKK
+1689,Fordringar Paypal NZD
+1691,Paypal AUD - använd ej
+1692,Avräkning Shopify SEK
+1693,Avräkning Afound - Adyen
+1710,Förutbetalda hyreskostnader
+1730,Förutbetalda försäkringspremier
+1790,Övriga förutbetalda kostnader o upplupna intäkter
+1795,Observationskonto USD
+1796,Observationskonto EUR
+1797,Observationskonto SEK ej likvid
+1798,SEB Kort
+1799,Observationskonto SEK
+1901,SEK inbetalningar utanför bank (1901)
+1930,Företagskonto Swedbank 8327-9 943 518 541-9
+1931,SEB SEK 5212 10 297 96 Företagskonto
+1932,SEB SEK 5212 33 204 47 Enkla Sparkto Företag
+1950,SEB USD 5123 82 080 96
+1982,SEB EUR 5123 82 081 18
+1983,SEB EUR - SEK
+1985,TransferWise Ltd.
+2081,Aktiekapital
+2089,Årets vinst/förlust
+2091,Balanserad vinst eller förlust
+2099,Årets resultat
+2125,Periodiseringsfond 2025
+2126,Periodiseringsfond 2026
+2127,Periodiseringsfond 2027
+2129,Periodiseringsfond 2029
+2420,Förskott från kunder
+2440,Leverantörsskulder
+2447,Leverantörsskulder äldre system
+2448,Ej reskontraförda leverantörsskulder
+2495,Skuld till Skatteverket
+2510,Skatteskulder
+2514,Löneskatt på pensioner
+2518,Debiterad preliminärskatt
+2610,Ingen moms
+2611,Utgående moms på försäljning inom Sverige 25%
+2614,Ber utg moms på tjänsteförvärv från utlandet 25%
+2615,Ber utg moms på varuförvärv från annat EU-land 25%
+2616,Ber utg moms på varuförvärv från utlandet 25%
+2619,Ber utg moms på tjänsteförvärv från annat EU-land 25%
+2625,Ber utg moms på varuförvärv från annat EU-land 12%
+2635,Ber utg moms på varuförvärv från annat EU-land 6%
+2641,Debiterad ingående moms
+2645,Beräknad ingående moms på förvärv från utlandet
+2650,Redovisningskonto för moms
+2651,Redovisningskonto för tysk moms
+2652,Redovisningskonto för OSS
+2670,Utgående moms på försäljning Tyskland 19%
+2671,Utgående moms på försäljning inom EU OSS
+2710,Personalskatt
+2731,Avräkning lagstadgade sociala avgifter
+2890,Övriga kortfristiga skulder
+2892,Avräkningskonto Jim
+2893,Avräkningskonto Elvira
+2894,Avräkningskonto Daniel
+2896,Avräkningskonto Virill Holding AB
+2897,Avräkningskonto Daniel Eriksson Holding
+2898,Avräkningskonto Mockberg USA
+2899,Avräkningskonto Mockberg China
+2910,Upplupna löner
+2920,Upplupna semesterlöner
+2941,Beräknade upplupna lagstadgade sociala avgifter
+2990,Övriga upplupna kostnader o förutbetalda intäkter
+2996,Upplupna leverantörsskulder/kostnader från inköp
+3031,Försäljning varor företag Sverige 25% moms
+3034,Försäljning varor företag Sverige 0% moms
+3035,Försäljning varor företag export/import
+3036,Försäljning varor företag EU-land
+3041,Försäljning tjänster 25% moms Sv
+3042,Försäljning tjänster 12% moms Sv
+3044,Försäljn tjänst sv momsfri
+3045,Försälj tjänst utanför EU
+3046,Försälj tjänst till EU momspl
+3051,Försäljning varor privatpersoner
+3052,Försäljning varor - Återförsäljare Sverige
+3053,Försäljning varor 6% moms
+3054,Försäljning varor Sverige momsfri
+3055,Försäljning varor företag utanför EU momsfri
+3056,Försäljning varor EU momsfri
+3058,Försäljning varor privatpersoner Tyskland
+3146,Interimsintäkter
+3520,Fakturerade frakter
+3521,Fakturerade frakter EU-land
+3523,Fakturerade frakter EU med moms
+3720,Lämnade rabatter
+3721,Lämnade rabatter Tyskland
+3722,Lämnade rabatter EU
+3725,Lämnade rabatter Export
+3731,Lämnade rabatter privatpersoner EU
+3740,Öres- och kronutjämning
+3900,Övriga rörelseintäkter
+3960,Valutakursdifferenser
+3971,Vinst vid avyttring av immateriella anläggningstillgångar
+3980,Erhållna offentliga stöd m.m.
+3988,Erhållna bidrag och ersättningar för personal
+4010,Inköp av varor och material
+4031,Inköp inhemskt
+4035,Inköp varor export/import
+4036,Inköp varor EU-land 25%
+4038,Inköp varor EU-land 6%
+4041,Inköp tjänst exprt/import 25%
+4050,Kostnad varor utanför EU
+4051,Import enligt redovisning tullverket
+4052,Motkonto import enligt redovisning tullverket
+4056,Inköp varor lagerförda EU-land trepartshandel 12%
+4059,Kostnad såld lagervara
+4600,Legoarbeten och underentreprenader
+4602,Legoarbeten och underentreprenader utanför EU
+4795,Rabatt till kunder vid rabattkoder
+4900,Förändring av lager
+4950,Förändring av lager av färdiga varor
+4951,Kostnad skadad vara
+4960,Förändring av lager av handelsvaror
+5010,Lokalhyra
+5013,Hyra för lagerlokal
+5020,El för belysning
+5060,Städning och renhållning
+5090,Övriga lokalkostnader
+5410,Förbrukningsinventarier
+5420,Programvaror
+5421,Programvaror EU
+5422,Programvaror utanför EU
+5460,Förbrukningsmaterial
+5611,Drivmedel personbilar
+5612,Försäkring och skatt för personbilar
+5613,Reparation och underhåll av personbilar
+5615,Leasing av personbilar
+5616,Trängselskatt avdragsgill
+5710,Fraktkostnader och transportförsäkring
+5720,Tull- och speditionskostnader m.m
+5800,Resekostnader
+5810,Biljetter
+5820,Hyrbilskostnader
+5831,Kost och logi i Sverige
+5832,Kost och logi i utlandet
+5900,Reklam och PR
+5910,Annonsering
+5911,Annonsering EU
+5930,Reklamtrycksaker och direkt reklam
+5931,Reklamkostnader EU
+5932,Reklamkostnader ej EU
+5940,Utställning mässor och konferens
+5941,Utställning mässor och konferens
+5961,Influencers och event
+5990,Övriga kostnader för reklam och PR
+5991,Övriga kostnader för reklam och PR inom EU
+5992,Övriga kostnader för reklam och PR ej EU
+6040,Kontokortsavgifter
+6050,Försäljningsprovisioner
+6051,Försäljningsprovisioner EU
+6052,Försäljningsprovisioner utanför EU
+6060,Kreditförsäljningskostnader
+6061,Kreditupplysning
+6062,Kostnader inkassohantering
+6063,Kreditförsäkringspremier
+6064,Factoringavgifter
+6071,Representation avdragsgill
+6072,Representation ej avdragsgill
+6110,Kontorsmateriel
+6210,Telekommunikation
+6212,Mobiltelefon
+6230,Datakommunikation
+6250,Porto
+6310,Företagsförsäkringar
+6350,Förluster på kundfordringar - moms
+6351,Förluster på kundfordringar - ej moms
+6420,Ersättning till revisor
+6530,Redovisningstjänster
+6540,IT-tjänster
+6542,IT-tjänster utanför EU
+6550,Konsultarvoden
+6551,Konsultarvoden EU
+6552,Konsultarvoden utanför EU
+6560,Serviceavgifter till branschorganisationer
+6570,Bankkostnader
+6590,Övriga externa tjänster
+6800,Inhyrd personal
+6970,Tidningar tidskrifter och facklitteratur
+6980,Föreningsavgifter
+6981,Föreningsavgifter avdragsgilla
+6982,Föreningsavgifter ej avdragsgilla
+6991,Övriga externa kostnader avdragsgilla
+6992,Övriga externa kostnader ej avdragsgilla
+7090,Förändring av semesterlöneskuld
+7210,Löner till tjänstemän
+7219,Upplupna löner till tjänstemän
+7285,Semesterlön tjänstemän
+7290,Förändring av semesterlöneskuld
+7310,Kontanta extraersättningar
+7321,Skattefria traktamenten Sverige
+7322,Skattepliktiga traktamenten Sverige
+7323,Skattefria traktamenten utlandet
+7324,Skattepliktiga traktamenten utlandet
+7331,Skattefria bilersättningar
+7338,Skattepliktig ers trängselskatt
+7385,Kostnader för fri bil
+7410,Pensionsförsäkringspremier
+7412,Premier för individuella pensionsförsäkringar
+7510,Lagstadgade sociala avgifter
+7519,Sociala avgifter för semester- och löneskuld
+7533,Särskild löneskatt för pensionskostnader
+7580,Gruppförsäkringspremier
+7610,Utbildning
+7621,Sjuk- och hälsovård avdragsgill
+7631,Personalrepresentation avdragsgill
+7632,Personalrepresentation ej avdragsgill
+7690,Övriga personalkostnader
+7810,Avskrivningar på immateriella anläggningstillgångar
+7811,Avskrivningar på balanserade utgifter
+7815,Avskrivningar på varumärken
+7832,Avskrivningar på inventarier och verktyg
+7960,Valutakursförl fordr o skulder rörelsekaraktär
+8072,Nedskrivningar av andelar i dotterföretag
+8310,Ränteintäkter från omsättningstillgångar
+8319,Övriga ränteintäkter från omsättningstillgångar
+8400,Räntekostnader
+8413,Räntekostnader för checkräkningskredit
+8420,Räntekostnader för kortfristiga skulder
+8422,Dröjsmålsräntor för leverantörsskulder
+8423,Räntekostnader för skatter och avgifter
+8430,Valutakursdifferenser på skulder
+8811,Avsättning till periodiseringsfond
+8819,Återföring från periodiseringsfond
+8910,Skatt som belastar årets resultat
+8999,Årets resultat
