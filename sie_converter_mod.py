@@ -408,7 +408,8 @@ class Master:
 			# brackets_list[5] är alltså kontot
 			konto = brackets_list[5]
 			if konto.startswith('3') or konto.startswith('4') or konto.startswith('5') or konto.startswith('6') or konto.startswith('7') or konto.startswith('8') or konto.startswith('9'):
-				belopp_2 = '-' + belopp_2
+				# belopp_2 = '-' + belopp_2
+				belopp_2 = belopp_2
 			
 			brackets_list.append(belopp_2)
 

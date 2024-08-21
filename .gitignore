@@ -1,0 +1,6 @@
+*.csv
+*.txt
+*.SI
+/data/
+*.xlsx
+*.SE
