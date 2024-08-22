@@ -2,29 +2,35 @@ import pandas as pd
 from datetime import datetime
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import Border, Side, Alignment
+from openpyxl.styles import Border, Side, Alignment, PatternFill, Font
+from tqdm import tqdm  # Importera tqdm för progress bar
+import time
+import sys
+import threading
 
 # Läs in CSV-filer
 ib_df = pd.read_csv('sie_to_pnl/data/IB.csv', encoding='ascii')
 konto_df = pd.read_csv('sie_to_pnl/data/KONTO.csv', encoding='ISO-8859-1')
-res_df = pd.read_csv('sie_to_pnl/data/RES.csv', encoding='ISO-8859-1')  # Läser in RES.csv
+res_df = pd.read_csv('sie_to_pnl/data/RES.csv', encoding='ISO-8859-1')
 
-# Hämta endast kontonummer från IB.csv
+# Hämta endast unika kontonummer från IB.csv
 ib_accounts = ib_df['konto'].unique()
 
-# Filtrera konto_df baserat på kontonummer i IB.csv
-filtered_konto_df = konto_df[konto_df['kontonummer'].isin(ib_accounts)]
+# Hämta endast unika kontonummer från RES.csv
+res_accounts = res_df['konto'].unique()
 
-# Lägg till konton från RES.csv till output DataFrame
-res_accounts = res_df[['konto']].drop_duplicates()
-res_accounts = res_accounts.rename(columns={'konto': 'account_number'})
-res_accounts['account_title'] = res_accounts['account_number'].map(
-    lambda x: konto_df[konto_df['kontonummer'] == x]['kontonamn'].values[0] if x in konto_df['kontonummer'].values else ''
-)
-res_accounts['zero_acc'] = ''
+# Kombinera alla kontonummer från IB och RES
+all_accounts = pd.concat([pd.Series(ib_accounts), pd.Series(res_accounts)]).unique()
 
-# Lägg till konton från RES.csv under de befintliga kontona
-output_df = pd.concat([filtered_konto_df, res_accounts])
+# Filtrera konto_df baserat på de kombinerade kontonumren från IB och RES
+filtered_konto_df = konto_df[konto_df['kontonummer'].isin(all_accounts)]
+
+# Skapa den slutliga DataFramen
+output_df = pd.DataFrame({
+    'account_number': filtered_konto_df['kontonummer'],
+    'account_title': filtered_konto_df['kontonamn'],
+    'zero_acc': ''
+})
 
 # Skapa filnamn baserat på aktuell tid
 current_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -33,14 +39,14 @@ output_filename = f'sie_to_pnl_output_{current_time}.xlsx'
 # Spara till en Excel-fil
 output_df.to_excel(f'sie_to_pnl/data/{output_filename}', sheet_name='Accounts', index=False)
 
-# Öppna filen igen för att modifiera den
+# Öppna workbook igen för att modifiera den
 wb = load_workbook(f'sie_to_pnl/data/{output_filename}')
 ws = wb['Accounts']
 
-# Auto-resize kolumnbredd
+# Auto-resize kolumnbredd baserat på innehållet
 for col in ws.columns:
     max_length = 0
-    column = col[0].column_letter  # Get the column name
+    column = col[0].column_letter  # Hämta kolumnnamn
     for cell in col:
         try:
             if len(str(cell.value)) > max_length:
@@ -64,4 +70,161 @@ for cell in ws[1]:
 wb.save(f'sie_to_pnl/data/{output_filename}')
 wb.close()
 
-print(f'Excel file saved as {output_filename}')
+# Öppna workbook igen för att lägga till P&L-sheetet
+wb = load_workbook(f'sie_to_pnl/data/{output_filename}')
+ws_pl = wb.create_sheet('P&L (reported)')  # Skapa ett nytt sheet som heter "P&L (reported)"
+
+# Förifyll P&L-sheetet med standardinfo
+ws_pl['C2'] = 'SEKm'
+ws_pl['C3'] = 'Line item'
+ws_pl['B4'] = 'Acc #'
+ws_pl['C4'] = 'Acc name'
+
+# Gör "Line item" bold
+bold_font = Font(bold=True)
+ws_pl['C3'].font = bold_font
+
+# Skapa en grå bakgrundsfärg #F2F2F2
+gray_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+
+# Lägg grå bakgrunden på förifyllda celler
+ws_pl['B2'].fill = gray_fill
+ws_pl['C2'].fill = gray_fill
+ws_pl['B3'].fill = gray_fill
+ws_pl['C3'].fill = gray_fill
+ws_pl['B4'].fill = gray_fill
+ws_pl['C4'].fill = gray_fill
+
+# Filtrera kontonummer för konton som är minst 3000
+filtered_pl_df = filtered_konto_df[filtered_konto_df['kontonummer'] >= 3000]
+
+# Lägg till kontonummer i kolumn B och account title i kolumn C i P&L-sheetet
+row_num = 7  # Börja på rad 7
+for index, row in filtered_pl_df.iterrows():
+    ws_pl.cell(row=row_num, column=2).value = row['kontonummer']  # Kolumn B
+    ws_pl.cell(row=row_num, column=3).value = row['kontonamn']  # Kolumn C
+    row_num += 1  # Flytta till nästa rad
+
+# Auto-resize kolumnbredd baserat på innehållet i P&L-sheetet
+for col in ws_pl.columns:
+    max_length = 0
+    column = col[0].column_letter  # Hämta kolumnnamn
+    for cell in col:
+        if cell.value:
+            cell_length = len(str(cell.value))
+            if cell_length > max_length:
+                max_length = cell_length
+    adjusted_width = (max_length + 2) * 1.2  # Justera bredden lite extra för marginal
+    ws_pl.column_dimensions[column].width = adjusted_width
+
+
+
+
+# Lägg till ny funktion för att läsa TRANSACTIONS.csv och skapa nytt sheet
+transactions_df = pd.read_csv('sie_to_pnl/data/TRANSACTIONS.csv', encoding='ISO-8859-1')
+
+# Omvandla 'ver_datum' till formatet YYYY-MM-DD
+transactions_df['ver_datum'] = pd.to_datetime(transactions_df['ver_datum'].astype(str), format='%Y%m%d').dt.strftime('%Y-%m-%d')
+
+# Kontrollera om 'belopp_2' existerar i DataFrame och hantera data
+if 'belopp_2' in transactions_df.columns:
+    # Ta bort eventuella dubbla minustecken från belopp_2 och konvertera till numeriskt värde
+    transactions_df['belopp_2'] = transactions_df['belopp_2'].replace('--', '-', regex=True).astype(float)
+else:
+    print("Kolumnen 'belopp_2' finns inte i CSV-filen.")
+
+# Extrahera år och månad från ver_datum och skapa en 'Month' kolumn som numeriskt värde
+transactions_df['Month'] = pd.to_datetime(transactions_df['ver_datum']).dt.strftime('%Y%m').astype(int)
+
+# Extrahera år från ver_datum och skapa ny kolumn, konvertera år till numeriskt format
+transactions_df['Year'] = transactions_df['ver_datum'].str[:4].astype(int)
+
+# Skapa ett nytt sheet med namnet baserat på året
+year_short = str(transactions_df['Year'].iloc[0])[2:4]  # Få de två sista siffrorna av året
+ws_transactions = wb.create_sheet(f'Transactions {year_short}')
+
+# Skriv DataFrame till det nya sheet med en progress bar
+for r_idx, row in enumerate(tqdm(transactions_df.values, desc="Writing transactions"), 1):
+    for c_idx, value in enumerate(row, 1):
+        ws_transactions.cell(row=r_idx + 1, column=c_idx).value = value
+
+# Lägg till rubrikerna
+for col_num, column_title in enumerate(transactions_df.columns, 1):
+    ws_transactions.cell(row=1, column=col_num).value = column_title
+
+# Skapa ett nytt DataFrame för aggregering
+aggregated_df = transactions_df.groupby(['konto', 'Month'])['belopp_2'].sum().reset_index()
+
+# Lägg till kontonamn från konto_df
+aggregated_df = pd.merge(aggregated_df, filtered_konto_df[['kontonummer', 'kontonamn']], left_on='konto', right_on='kontonummer')
+
+# Välj och döp om kolumner för det aggregerade sheetet
+aggregated_df = aggregated_df[['konto', 'kontonamn', 'Month', 'belopp_2']]
+aggregated_df.columns = ['Account_number', 'Account_title', 'Month', 'Value']
+
+# Skapa ett nytt sheet för aggregerad data
+ws_aggregated = wb.create_sheet(f'Transaction {year_short} - Aggregated')
+
+# Skriv DataFrame till det nya sheetet med en progress bar
+for r_idx, row in enumerate(tqdm(aggregated_df.values, desc="Writing aggregated data"), 1):
+    for c_idx, value in enumerate(row, 1):
+        ws_aggregated.cell(row=r_idx + 1, column=c_idx).value = value
+
+# Lägg till rubrikerna
+for col_num, column_title in enumerate(aggregated_df.columns, 1):
+    ws_aggregated.cell(row=1, column=col_num).value = column_title
+
+# Auto-resize kolumnbredd baserat på innehållet i det aggregerade sheetet
+for col in ws_aggregated.columns:
+    max_length = 0
+    column = col[0].column_letter  # Get the column name
+    for cell in col:
+        if cell.value:
+            cell_length = len(str(cell.value))
+            if cell_length > max_length:
+                max_length = cell_length
+    adjusted_width = (max_length + 2) * 1.2  # Justera bredden lite extra för marginal
+    ws_aggregated.column_dimensions[column].width = adjusted_width
+
+# Hämta unika månader från den aggregerade datan, sortera och placera i P&L-sheetet
+unique_months = sorted(aggregated_df['Month'].unique())
+for idx, month in enumerate(unique_months, start=4):  # Starta på kolumn D (index 4)
+    cell = ws_pl.cell(row=4, column=idx)
+    cell.value = month
+    cell.alignment = Alignment(horizontal='center')
+
+# Lägg till formeln i D7 och kopiera nedåt och till höger
+first_row = 7
+last_row = ws_pl.max_row
+first_col = 4  # D
+last_col = first_col + len(unique_months) - 1
+
+for row in range(first_row, last_row + 1):
+    for col in range(first_col, last_col + 1):
+        col_letter = get_column_letter(col)
+        formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'P&L'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'P&L'!{col_letter}$4)"
+        ws_pl.cell(row=row, column=col).value = formula
+
+# Funktion för att visa animationen
+def animate():
+    animation = "|/-\\"
+    idx = 0
+    while not stop_animation.is_set():
+        sys.stdout.write(f"\rWorking... {animation[idx % len(animation)]}")
+        sys.stdout.flush()
+        idx += 1
+        time.sleep(0.1)
+
+# Starta animationen i en separat thread
+stop_animation = threading.Event()
+animation_thread = threading.Thread(target=animate)
+animation_thread.start()
+
+# Spara alla ändringar
+wb.save(f'sie_to_pnl/data/{output_filename}')
+
+# Stoppa animationen och visa att processen är klar
+stop_animation.set()
+animation_thread.join()
+sys.stdout.write(f"\rExcel file saved as {output_filename}\n")
+sys.stdout.write("Done!\n")
