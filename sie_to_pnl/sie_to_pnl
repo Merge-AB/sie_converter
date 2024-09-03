@@ -413,9 +413,9 @@ def apply_sumifs_formulas(first_row, last_row, exclude_rows, column_start=4):
             formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'P&L (reported)'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'P&L (reported)'!{col_letter}$4)"
             ws_pl.cell(row=row, column=col).value = formula
 
-# Sektion för 4000-5899-konton (COGS)
+# Sektion för 4000-4999-konton (COGS)
 first_4000_row = None
-last_5899_row = None
+last_4999_row = None
 
 pl_max_row = get_max_row()
 for row in range(pl_first_row, pl_max_row + 1):
@@ -423,12 +423,12 @@ for row in range(pl_first_row, pl_max_row + 1):
     if account_number is not None:
         account_number = int(account_number)
 
-        if 4000 <= account_number <= 5899:
+        if 4000 <= account_number <= 4999:
             if first_4000_row is None:
                 first_4000_row = row
-            last_5899_row = row
+            last_4999_row = row
 
-# Lägg till en tom rad ovanför första raden inom 4000-5899 intervallet (COGS)
+# Lägg till en tom rad ovanför första raden inom 4000-4999 intervallet (COGS)
 if first_4000_row is not None:
     cogs_row = first_4000_row
     ws_pl.insert_rows(cogs_row)
@@ -437,149 +437,42 @@ if first_4000_row is not None:
     ws_pl.cell(row=cogs_row, column=3).value = "COGS"
     ws_pl.cell(row=cogs_row, column=3).font = bold_font
 
-    # Lägg till summeringar från första till sista raden inom 4000-5899, i cellerna till höger
+    # Lägg till summeringar från första till sista raden inom 4000-4999, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
-        sum_range = f"{get_column_letter(col)}{cogs_row + 1}:{get_column_letter(col)}{last_5899_row + 1}"
+        sum_range = f"{get_column_letter(col)}{cogs_row + 1}:{get_column_letter(col)}{last_4999_row + 1}"
         formula = f"=SUM({sum_range})"
         cell = ws_pl.cell(row=cogs_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
 
 # Lägg till en rad för "Gross profit 1" som summerar "Total revenue" och "COGS"
-if last_5899_row is not None:
-    gross_profit_1_row = last_5899_row + 2  # +2 för att hantera den nya raden och summeringsraden
-    ws_pl.insert_rows(gross_profit_1_row)
+if last_4999_row is not None:
+    gross_profit_row = last_4999_row + 2  # +2 för att hantera den nya raden och summeringsraden
+    ws_pl.insert_rows(gross_profit_row)
 
     # Lägg till "Gross profit 1" i fetstil på den nya raden
-    ws_pl.cell(row=gross_profit_1_row, column=3).value = "Gross profit 1"
-    ws_pl.cell(row=gross_profit_1_row, column=3).font = bold_font
+    ws_pl.cell(row=gross_profit_row, column=3).value = "Gross profit"
+    ws_pl.cell(row=gross_profit_row, column=3).font = bold_font
 
     # Summera "Total revenue" och "COGS" för varje kolumn
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
         total_revenue_cell = ws_pl.cell(row=total_revenue_row, column=col).coordinate
         cogs_cell = ws_pl.cell(row=cogs_row, column=col).coordinate
-        formula = f"={total_revenue_cell}-{cogs_cell}"
-        cell = ws_pl.cell(row=gross_profit_1_row, column=col)
+        formula = f"={total_revenue_cell}+{cogs_cell}"
+        cell = ws_pl.cell(row=gross_profit_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
 
     # Lägg till den anpassade bordern (tunn topp, tjock botten) på "Gross profit 1"-raden
     for col in range(2, ws_pl.max_column + 1):
-        cell = ws_pl.cell(row=gross_profit_1_row, column=col)
+        cell = ws_pl.cell(row=gross_profit_row, column=col)
         cell.border = custom_border
 
-    # Lägg till en extra tom rad efter "Gross profit 1"
-    ws_pl.insert_rows(gross_profit_1_row + 1)
+    # Lägg till en extra tom rad efter "Gross profit"
+    ws_pl.insert_rows(gross_profit_row + 1)
 
-# Sektion för 5900-5999-konton (Marketing)
-first_5900_row = None
-last_5999_row = None
-
-pl_max_row = get_max_row()  # Uppdatera max row
-for row in range(pl_first_row, pl_max_row + 1):
-    account_number = ws_pl.cell(row=row, column=2).value
-    if account_number is not None:
-        account_number = int(account_number)
-
-        if 5900 <= account_number <= 5999:
-            if first_5900_row is None:
-                first_5900_row = row
-            last_5999_row = row
-
-# Lägg till en tom rad ovanför första raden inom 5900-5999 intervallet (Marketing)
-if first_5900_row is not None:
-    marketing_row = first_5900_row
-    ws_pl.insert_rows(marketing_row)
-
-    # Lägg till "Marketing" i fetstil på den nya raden
-    ws_pl.cell(row=marketing_row, column=3).value = "Marketing"
-    ws_pl.cell(row=marketing_row, column=3).font = bold_font
-
-    # Lägg till summeringar från första till sista raden inom 5900-5999, i cellerna till höger
-    for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
-        sum_range = f"{get_column_letter(col)}{marketing_row + 1}:{get_column_letter(col)}{last_5999_row + 1}"
-        formula = f"=SUM({sum_range})"
-        cell = ws_pl.cell(row=marketing_row, column=col)
-        cell.value = formula
-        cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
-
-# Lägg till en rad för "Gross profit 2" som summerar "Gross profit 1" och "Marketing"
-if last_5999_row is not None:
-    gross_profit_2_row = last_5999_row + 2  # +2 för att hantera den nya raden och summeringsraden
-    ws_pl.insert_rows(gross_profit_2_row)
-
-    # Lägg till "Gross profit 2" i fetstil på den nya raden
-    ws_pl.cell(row=gross_profit_2_row, column=3).value = "Gross profit 2"
-    ws_pl.cell(row=gross_profit_2_row, column=3).font = bold_font
-
-    # Summera "Gross profit 1" och "Marketing" för varje kolumn
-    for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
-        gross_profit_1_cell = ws_pl.cell(row=gross_profit_1_row, column=col).coordinate
-        marketing_cell = ws_pl.cell(row=marketing_row, column=col).coordinate
-        formula = f"={gross_profit_1_cell}-{marketing_cell}"
-        cell = ws_pl.cell(row=gross_profit_2_row, column=col)
-        cell.value = formula
-        cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
-
-    # Lägg till den anpassade bordern (tunn topp, tjock botten) på "Gross profit 2"-raden
-    for col in range(2, ws_pl.max_column + 1):
-        cell = ws_pl.cell(row=gross_profit_2_row, column=col)
-        cell.border = custom_border
-
-    # Lägg till en extra tom rad efter "Gross profit 2"
-    ws_pl.insert_rows(gross_profit_2_row + 1)
-
-# Uppdatera pl_max_row efter alla tillägg
-pl_max_row = get_max_row()
-
-# Använd den dynamiska funktionen för att uppdatera SUMIFS-formlerna för varje sektion
-apply_sumifs_formulas(first_4000_row + 1, last_5899_row + 1, exclude_rows=[cogs_row])
-apply_sumifs_formulas(first_5900_row + 1, last_5999_row + 1, exclude_rows=[marketing_row])
-
-
-
-
-
-# Sektion för 6000-6999-konton (Other external costs)
-first_6000_row = None
-last_6999_row = None
-
-pl_max_row = get_max_row()  # Hämta dynamiskt den aktuella sista raden
-for row in range(pl_first_row, pl_max_row + 1):
-    account_number = ws_pl.cell(row=row, column=2).value
-    if account_number is not None:
-        account_number = int(account_number)
-
-        if 6000 <= account_number <= 6999:
-            if first_6000_row is None:
-                first_6000_row = row
-            last_6999_row = row
-
-# Lägg till en tom rad ovanför första raden inom 6000-6999 intervallet (Other external costs)
-if first_6000_row is not None:
-    external_costs_row = first_6000_row
-    ws_pl.insert_rows(external_costs_row)
-
-    # Lägg till "Other external costs" i fetstil på den nya raden
-    ws_pl.cell(row=external_costs_row, column=3).value = "Other external costs"
-    ws_pl.cell(row=external_costs_row, column=3).font = bold_font
-
-    # Lägg till summeringar från första till sista raden inom 6000-6999, i cellerna till höger
-    for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
-        sum_range = f"{get_column_letter(col)}{external_costs_row + 1}:{get_column_letter(col)}{last_6999_row + 1}"
-        formula = f"=SUM({sum_range})"
-        cell = ws_pl.cell(row=external_costs_row, column=col)
-        cell.value = formula
-        cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
-
-
-
-
-
-
-
-# Sektion för 7000-7799-konton (Personnel costs)
-first_7000_row = None
+# Sektion för 5000-7799-konton (Operating expenses)
+first_5000_row = None
 last_7799_row = None
 
 pl_max_row = get_max_row()  # Uppdatera max row
@@ -588,64 +481,60 @@ for row in range(pl_first_row, pl_max_row + 1):
     if account_number is not None:
         account_number = int(account_number)
 
-        if 7000 <= account_number <= 7799:
-            if first_7000_row is None:
-                first_7000_row = row
+        if 5000 <= account_number <= 7799:
+            if first_5000_row is None:
+                first_5000_row = row
             last_7799_row = row
 
-# Lägg till en tom rad ovanför första raden inom 7000-7799 intervallet (Personnel costs)
-if first_7000_row is not None:
-    personnel_costs_row = first_7000_row
-    ws_pl.insert_rows(personnel_costs_row)
+# Lägg till en tom rad ovanför första raden inom 5000-7799 intervallet (Operating expenses)
+if first_5000_row is not None:
+    operating_expenses_row = first_5000_row
+    ws_pl.insert_rows(operating_expenses_row)
 
-    # Lägg till "Personnel costs" i fetstil på den nya raden
-    ws_pl.cell(row=personnel_costs_row, column=3).value = "Personnel costs"
-    ws_pl.cell(row=personnel_costs_row, column=3).font = bold_font
+    # Lägg till "Operating expenses" i fetstil på den nya raden
+    ws_pl.cell(row=operating_expenses_row, column=3).value = "Operating expenses"
+    ws_pl.cell(row=operating_expenses_row, column=3).font = bold_font
 
-    # Lägg till summeringar från första till sista raden inom 7000-7799, i cellerna till höger
+    # Lägg till summeringar från första till sista raden inom 5000-7799, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
-        sum_range = f"{get_column_letter(col)}{personnel_costs_row + 1}:{get_column_letter(col)}{last_7799_row + 1}"
+        sum_range = f"{get_column_letter(col)}{operating_expenses_row + 1}:{get_column_letter(col)}{last_7799_row + 1}"
         formula = f"=SUM({sum_range})"
-        cell = ws_pl.cell(row=personnel_costs_row, column=col)
+        cell = ws_pl.cell(row=operating_expenses_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
 
-# Lägg till en rad för "EBITDA" som summerar "Gross profit 2", "Other external costs" och "Personnel costs"
+# Lägg till en rad för "Gross profit" som summerar "Gross profit" och "Operating expenses"
 if last_7799_row is not None:
     ebitda_row = last_7799_row + 2  # +2 för att hantera den nya raden och summeringsraden
     ws_pl.insert_rows(ebitda_row)
 
-    # Lägg till "EBITDA" i fetstil på den nya raden
+    # Lägg till "Gross profit 2" i fetstil på den nya raden
     ws_pl.cell(row=ebitda_row, column=3).value = "EBITDA"
     ws_pl.cell(row=ebitda_row, column=3).font = bold_font
 
-    # Summera "Gross profit 2", "Other external costs" och "Personnel costs" för varje kolumn
+    # Summera "Gross profit" och "Operating expenses" för varje kolumn
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
-        gross_profit_2_cell = ws_pl.cell(row=gross_profit_2_row, column=col).coordinate
-        external_costs_cell = ws_pl.cell(row=external_costs_row, column=col).coordinate
-        personnel_costs_cell = ws_pl.cell(row=personnel_costs_row, column=col).coordinate
-        formula = f"={gross_profit_2_cell}-{external_costs_cell}-{personnel_costs_cell}"
+        gross_profit_cell = ws_pl.cell(row=gross_profit_row, column=col).coordinate
+        operating_expenses_cell = ws_pl.cell(row=operating_expenses_row, column=col).coordinate
+        formula = f"={gross_profit_cell}+{operating_expenses_cell}"
         cell = ws_pl.cell(row=ebitda_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
 
-    # Lägg till den anpassade bordern (tunn topp, tjock botten) på "EBITDA"-raden
+    # Lägg till den anpassade bordern (tunn topp, tjock botten) på "Gross profit 2"-raden
     for col in range(2, ws_pl.max_column + 1):
         cell = ws_pl.cell(row=ebitda_row, column=col)
         cell.border = custom_border
 
-    # Lägg till en extra tom rad efter "EBITDA"
+    # Lägg till en extra tom rad efter "Gross profit 2"
     ws_pl.insert_rows(ebitda_row + 1)
 
 # Uppdatera pl_max_row efter alla tillägg
 pl_max_row = get_max_row()
 
 # Använd den dynamiska funktionen för att uppdatera SUMIFS-formlerna för varje sektion
-apply_sumifs_formulas(first_6000_row + 1, last_6999_row + 1, exclude_rows=[external_costs_row])
-apply_sumifs_formulas(first_7000_row + 1, last_7799_row + 1, exclude_rows=[personnel_costs_row])
-
-
-
+apply_sumifs_formulas(first_4000_row + 1, last_4999_row + 1, exclude_rows=[cogs_row])
+apply_sumifs_formulas(first_5000_row + 1, last_7799_row + 1, exclude_rows=[operating_expenses_row])
 
 
 
@@ -908,7 +797,7 @@ if first_8999_row is not None and last_8999_row is not None:
 
 
 
-
+## FORTSÄTT MED ATT FIXA SÅ SUMMERINGSRADERNA ÄR RÄTT. NU ÄR DET MINUS ISTÄLLET FÖR PLUS VILKET LEDER TILL SUMMERINGSFEL. BORDE VARA ENKEL FIX.
 
 
 
