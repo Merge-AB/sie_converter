@@ -266,8 +266,8 @@ for row in range(6, ws_pl.max_row + 1):
 # Lägg till formeln i D7 och kopiera nedåt och till höger för BS (reported)
 first_row_bs = 7
 last_row_bs = ws_pl_1000_2999.max_row
-first_col_bs = 4  # D
-last_col_bs = first_col_bs + len(unique_months) - 1
+first_col_bs = 5  # E
+last_col_bs = first_col_bs + len(unique_months) - 2  # -2 eftersom vi hoppar över första månaden
 
 for row in range(first_row_bs, last_row_bs + 1):
     for col in range(first_col_bs, last_col_bs + 1):
@@ -275,8 +275,15 @@ for row in range(first_row_bs, last_row_bs + 1):
         formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
         ws_pl_1000_2999.cell(row=row, column=col).value = formula
 
+# Formatera alla celler i BS-sheetet från rad 6 och kolumn D nedåt och åt sidan med formatet #,##0;(#,##0);-
+for row in range(6, ws_pl_1000_2999.max_row + 1):
+    for col in range(4, ws_pl_1000_2999.max_column + 1):  # Startar på kolumn D (kolumn 4)
+        cell = ws_pl_1000_2999.cell(row=row, column=col)
+        cell.number_format = '#,##0;(#,##0);-'
+
 # Definiera borders med en tunn topp och en tjock botten
 custom_border = Border(top=Side(style='thin'), bottom=Side(style='thick'))
+
 
 # Funktion för att få den aktuella sista raden
 def get_max_row():
