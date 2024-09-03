@@ -64,6 +64,31 @@ for cell in ws[1]:
     cell.border = thin_border
     cell.alignment = Alignment(horizontal='left')  # Vänsterjustera texten
 
+# Lägg till ett nytt blad för IB.csv-datan
+ws_ib = wb.create_sheet(title='IB')
+
+# Skriv headers från IB.csv-datan till det nya bladet
+for col_idx, header in enumerate(ib_df.columns, start=1):
+    ws_ib.cell(row=1, column=col_idx, value=header)
+
+# Skriv IB.csv-datan till det nya bladet, efter headers
+for r_idx, row in enumerate(ib_df.values, start=2):  # Startar från rad 2 för att lämna plats för headers
+    for c_idx, value in enumerate(row, start=1):
+        ws_ib.cell(row=r_idx, column=c_idx, value=value)
+
+## Auto-resize kolumnbredd för IB-bladet
+for col_idx, col in enumerate(ws_ib.iter_cols(min_row=1, max_row=ws_ib.max_row, min_col=1, max_col=ws_ib.max_column), start=1):
+    max_length = 0
+    column = col_idx  # Kolumnindex
+    for cell in col:
+        try:
+            if len(str(cell.value)) > max_length:
+                max_length = len(str(cell.value))
+        except:
+            pass
+    adjusted_width = max_length + 2
+    ws_ib.column_dimensions[get_column_letter(column)].width = adjusted_width
+
 # Spara ändringarna
 wb.save(f'sie_to_pnl/data/{output_filename}')
 wb.close()
