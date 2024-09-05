@@ -93,6 +93,19 @@ for col_idx, col in enumerate(ws_ib.iter_cols(min_row=1, max_row=ws_ib.max_row, 
 wb.save(f'sie_to_pnl/data/{output_filename}')
 wb.close()
 
+##### FUNCTIONS START :
+
+def format_account_names(sheet):
+    for row in sheet.iter_rows(min_row=5, max_row=sheet.max_row):
+        account_number = row[1].value
+        if account_number is not None:  # Om kolumn B innehåller ett kontonummer
+            account_title_cell = row[2]  # Kolumn C där kontonamnet finns
+            account_title_cell.alignment = Alignment(indent=1)  # Öka indragningen
+
+
+##### FUNCTIONS SLUT :
+
+
 ## P&L sheetet prep work##
 
 # Öppna workbook igen för att lägga till P&L-sheetet
@@ -842,14 +855,117 @@ if first_8999_row is not None and last_8999_row is not None:
             cell.value = formula
             cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
 
+## Formatering: increase indent på alla kontorader i P&L reported
+format_account_names(ws_pl)
+
+# Byt till BS (reported) sheetet
+ws_bs = ws_pl_1000_2999  # Arbeta med BS (reported) sheetet
+
+# Summeringar för konton mellan 1000-2999 i "BS (reported)" sheetet
+
+# Sektioner: Intangible assets (1000-1099), Tangible assets (1100-1299), Financial assets (1300-1399)
+# Total summering: Fixed assets
+
+first_intangible_row = None
+last_intangible_row = None
+first_tangible_row = None
+last_tangible_row = None
+first_financial_row = None
+last_financial_row = None
+fixed_assets_row = None
+
+# Håll koll på förskjutningarna när nya rader läggs till
+row_offset = 0
+
+# Definiera de ursprungliga start- och slutraderna innan summeringsrader infogas
+for row in range(first_row_bs, last_row_bs + 1):
+    account_number = ws_bs.cell(row=row + row_offset, column=2).value  # Arbeta med ws_bs (BS (reported))
+    if account_number is not None:
+        account_number = int(account_number)
+
+        if 1000 <= account_number <= 1099:
+            if first_intangible_row is None:
+                first_intangible_row = row + row_offset
+            last_intangible_row = row + row_offset
+        elif 1100 <= account_number <= 1299:
+            if first_tangible_row is None:
+                first_tangible_row = row + row_offset
+            last_tangible_row = row + row_offset
+        elif 1300 <= account_number <= 1399:
+            if first_financial_row is None:
+                first_financial_row = row + row_offset
+            last_financial_row = row + row_offset
+
+# Lägg till SUMIFS-formler för konton mellan 1000 och 2999 i BS (reported) sheetet
+for row in range(first_row_bs, last_row_bs + 1):
+    account_number = ws_bs.cell(row=row + row_offset, column=2).value
+    if account_number is not None:
+        account_number = int(account_number)
+        
+        # Loopa genom alla kolumner, justera beroende på om det är första kolumnen eller ej
+        for col in range(4, ws_bs.max_column + 1):  # Börja på kolumn D (kolumn 4)
+            col_letter = get_column_letter(col)
+            
+            # Om vi är på kolumn D (kolumn 4), använd IB-formeln
+            if col == 4:
+                formula = f"=SUMIFS(IB!D:D, IB!$B:$B, 0, IB!$C:$C, 'BS (reported)'!$B{row + row_offset})"
+            # För alla andra kolumner, använd Transaction-formeln
+            else:
+                formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row + row_offset},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
+            
+            # Applicera formeln till cellen
+            ws_bs.cell(row=row + row_offset, column=col).value = formula
+
+# Summering för "Intangible assets"
+if first_intangible_row is not None:
+    intangible_assets_row = first_intangible_row  # Lägg summeringsraden ovanför första raden i sektionen
+    ws_bs.insert_rows(intangible_assets_row)
+    
+    # Uppdatera radoffset när en rad läggs till
+    row_offset += 1
+
+    # Justera first och last row för intangible assets eftersom en ny rad har lagts till
+    first_intangible_row += 1
+    last_intangible_row += 1
+
+    # Sätt summeringsrubriken
+    ws_bs.cell(row=intangible_assets_row, column=3).value = "Intangible assets"
+    ws_bs.cell(row=intangible_assets_row, column=3).font = bold_font
+    
+    # Summera värdena i kolumnerna
+    for col in range(4, ws_bs.max_column + 1):
+        # Inkludera hela intervallet från den rad som representerar "intangible assets"
+        sum_range = f"{get_column_letter(col)}{intangible_assets_row + 1}:{get_column_letter(col)}{last_intangible_row}"
+        
+        formula = f"=SUM({sum_range})"
+        cell = ws_bs.cell(row=intangible_assets_row, column=col)
+        cell.value = formula
+        cell.number_format = '#,##0;(#,##0);-'  # Sätt nummerformatet
+        cell.font = bold_font  # Gör summeringen fetstil
+
+    # Justera SUMIFS-formler för alla efterföljande rader efter att summeringsrad lagts till
+    for row in range(intangible_assets_row + 1, last_row_bs + row_offset + 1):
+        account_number = ws_bs.cell(row=row, column=2).value
+        if account_number is not None:
+            account_number = int(account_number)
+            
+            # Loopa genom alla kolumner, justera beroende på om det är första kolumnen eller ej
+            for col in range(4, ws_bs.max_column + 1):
+                col_letter = get_column_letter(col)
+                
+                # Om vi är på kolumn D (kolumn 4), använd IB-formeln
+                if col == 4:
+                    formula = f"=SUMIFS(IB!D:D, IB!$B:$B, 0, IB!$C:$C, 'BS (reported)'!$B{row})"
+                # För alla andra kolumner, använd Transaction-formeln
+                else:
+                    formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
+                
+                # Uppdatera formeln i cellen
+                ws_bs.cell(row=row, column=col).value = formula
 
 
-
-
-
-## FORTSÄTT MED ATT FÅ IN EN SUMIFS FRÅN IB TILL FÖRSTA MÅNADEN I BS!
-
-
+## Formatering: increase indent på alla kontorader i BS reported
+format_account_names(ws_bs)
 
 
 
@@ -901,3 +1017,14 @@ stop_animation.set()
 animation_thread.join()
 sys.stdout.write(f"\rExcel file saved as {output_filename}\n")
 sys.stdout.write("Done!\n")
+
+
+
+
+
+
+
+
+
+
+
