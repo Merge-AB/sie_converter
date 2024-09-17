@@ -95,13 +95,13 @@ wb.close()
 
 ##### FUNCTIONS START :
 
+## Denna anropas två gånger nedan
 def format_account_names(sheet):
     for row in sheet.iter_rows(min_row=5, max_row=sheet.max_row):
         account_number = row[1].value
         if account_number is not None:  # Om kolumn B innehåller ett kontonummer
             account_title_cell = row[2]  # Kolumn C där kontonamnet finns
             account_title_cell.alignment = Alignment(indent=1)  # Öka indragningen
-
 
 ##### FUNCTIONS SLUT :
 
@@ -128,14 +128,6 @@ ws_pl['C3'].font = bold_font
 
 # Skapa en grå bakgrundsfärg #F2F2F2
 gray_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
-
-# Lägg grå bakgrunden på förifyllda celler
-ws_pl['B2'].fill = gray_fill
-ws_pl['C2'].fill = gray_fill
-ws_pl['B3'].fill = gray_fill
-ws_pl['C3'].fill = gray_fill
-ws_pl['B4'].fill = gray_fill
-ws_pl['C4'].fill = gray_fill
 
 # Filtrera kontonummer för konton som är minst 3000
 filtered_pl_df = filtered_konto_df[filtered_konto_df['kontonummer'] >= 3000]
@@ -172,14 +164,6 @@ ws_pl_1000_2999['C4'] = 'Acc name'
 
 # Gör "Line item" bold
 ws_pl_1000_2999['C3'].font = bold_font
-
-# Lägg grå bakgrunden på förifyllda celler
-ws_pl_1000_2999['B2'].fill = gray_fill
-ws_pl_1000_2999['C2'].fill = gray_fill
-ws_pl_1000_2999['B3'].fill = gray_fill
-ws_pl_1000_2999['C3'].fill = gray_fill
-ws_pl_1000_2999['B4'].fill = gray_fill
-ws_pl_1000_2999['C4'].fill = gray_fill
 
 # Filtrera kontonummer för konton som är mellan 1000 och 2999
 filtered_1000_2999_df = filtered_konto_df[(filtered_konto_df['kontonummer'] >= 1000) & (filtered_konto_df['kontonummer'] <= 2999)]
@@ -309,27 +293,27 @@ last_row_bs = ws_pl_1000_2999.max_row
 first_col_bs = 5  # E
 last_col_bs = first_col_bs + len(unique_months) - 2  # -2 eftersom vi hoppar över första månaden
 
-for row in range(first_row_bs, last_row_bs + 1):
-    for col in range(first_col_bs, last_col_bs + 1):
-        col_letter = get_column_letter(col)
-        formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
-        ws_pl_1000_2999.cell(row=row, column=col).value = formula
+# for row in range(first_row_bs, last_row_bs + 1):
+#     for col in range(first_col_bs, last_col_bs + 1):
+#         col_letter = get_column_letter(col)
+#         formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
+#         ws_pl_1000_2999.cell(row=row, column=col).value = formula
 
-# Steg 2: Lägg till SUMIFS-formeln från "IB" bladet i kolumn D och fyll ner för alla konton i BS (reported)
-target_column = 4  # Kolumn D (kolumn 4)
+# # Steg 2: Lägg till SUMIFS-formeln från "IB" bladet i kolumn D och fyll ner för alla konton i BS (reported)
+# target_column = 4  # Kolumn D (kolumn 4)
 
-for row in range(first_row_bs, last_row_bs + 1):
-    # Formel som ska läggas i varje cell i kolumn D från rad 7 och nedåt
-    formula = f"=SUMIFS(IB!D:D, IB!$B:$B, 0, IB!$C:$C, 'BS (reported)'!$B{row})"
+# for row in range(first_row_bs, last_row_bs + 1):
+#     # Formel som ska läggas i varje cell i kolumn D från rad 7 och nedåt
+#     formula = f"=SUMIFS(IB!D:D, IB!$B:$B, 0, IB!$C:$C, 'BS (reported)'!$B{row})"
     
-    # Lägg till formeln i cellen i kolumn D
-    ws_pl_1000_2999.cell(row=row, column=target_column).value = formula
+#     # Lägg till formeln i cellen i kolumn D
+#     ws_pl_1000_2999.cell(row=row, column=target_column).value = formula
 
-# Steg 3: Formatera alla celler i BS-sheetet från rad 6 och kolumn D nedåt och åt sidan med formatet #,##0;(#,##0);-
-for row in range(6, ws_pl_1000_2999.max_row + 1):
-    for col in range(4, ws_pl_1000_2999.max_column + 1):  # Startar på kolumn D (kolumn 4)
-        cell = ws_pl_1000_2999.cell(row=row, column=col)
-        cell.number_format = '#,##0;(#,##0);-'
+# # Steg 3: Formatera alla celler i BS-sheetet från rad 6 och kolumn D nedåt och åt sidan med formatet #,##0;(#,##0);-
+# for row in range(6, ws_pl_1000_2999.max_row + 1):
+#     for col in range(4, ws_pl_1000_2999.max_column + 1):  # Startar på kolumn D (kolumn 4)
+#         cell = ws_pl_1000_2999.cell(row=row, column=col)
+#         cell.number_format = '#,##0;(#,##0);-'
 
 
 # Definiera borders med en tunn topp och en tjock botten
@@ -377,8 +361,7 @@ if first_3000_row is not None:
 
     # Lägg till "Sales" i fetstil på den nya raden
     ws_pl.cell(row=sales_row, column=3).value = "Sales"
-    ws_pl.cell(row=sales_row, column=3).font = bold_font
-
+    
     # Lägg till summeringar från första till sista raden inom 3000-3899, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
         sum_range = f"{get_column_letter(col)}{sales_row + 1}:{get_column_letter(col)}{last_3899_row + 1}"
@@ -409,7 +392,6 @@ if first_3900_row is not None:
 
     # Lägg till "Other income" i fetstil på den nya raden
     ws_pl.cell(row=other_income_row, column=3).value = "Other income"
-    ws_pl.cell(row=other_income_row, column=3).font = bold_font
 
     # Lägg till summeringar från första till sista raden inom 3900-3999, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
@@ -498,8 +480,7 @@ if first_4000_row is not None:
 
     # Lägg till "COGS" i fetstil på den nya raden
     ws_pl.cell(row=cogs_row, column=3).value = "COGS"
-    ws_pl.cell(row=cogs_row, column=3).font = bold_font
-
+    
     # Lägg till summeringar från första till sista raden inom 4000-4999, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
         sum_range = f"{get_column_letter(col)}{cogs_row + 1}:{get_column_letter(col)}{last_4999_row + 1}"
@@ -556,8 +537,7 @@ if first_5000_row is not None:
 
     # Lägg till "Operating expenses" i fetstil på den nya raden
     ws_pl.cell(row=operating_expenses_row, column=3).value = "Operating expenses"
-    ws_pl.cell(row=operating_expenses_row, column=3).font = bold_font
-
+    
     # Lägg till summeringar från första till sista raden inom 5000-7799, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
         sum_range = f"{get_column_letter(col)}{operating_expenses_row + 1}:{get_column_letter(col)}{last_7799_row + 1}"
@@ -624,8 +604,7 @@ if first_7800_row is not None:
 
     # Lägg till "D&A" i fetstil på den nya raden
     ws_pl.cell(row=da_row, column=3).value = "D&A"
-    ws_pl.cell(row=da_row, column=3).font = bold_font
-
+    
     # Lägg till summeringar från första till sista raden inom 7800-7899, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
         sum_range = f"{get_column_letter(col)}{da_row + 1}:{get_column_letter(col)}{last_7899_row + 1}"
@@ -696,7 +675,6 @@ if first_7900_row is not None:
 
     # Lägg till "Financial items" i fetstil på den nya raden
     ws_pl.cell(row=financial_items_row, column=3).value = "Financial items"
-    ws_pl.cell(row=financial_items_row, column=3).font = bold_font
 
     # Lägg till summeringar från första till sista raden inom 7900-8799, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
@@ -714,7 +692,7 @@ if last_8799_row is not None:
     # Lägg till "EBT" i fetstil på den nya raden
     ws_pl.cell(row=ebt_row, column=3).value = "EBT"
     ws_pl.cell(row=ebt_row, column=3).font = bold_font
-
+    
     # Summera "EBIT" och "Financial items" för varje kolumn
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
         ebit_cell = ws_pl.cell(row=ebit_row, column=col).coordinate  # Justering här för att peka på rätt rad
@@ -772,7 +750,6 @@ if first_8800_row is not None:
 
     # Lägg till "Year-end adjustments och tax" i fetstil på den nya raden
     ws_pl.cell(row=year_end_adjustments_row, column=3).value = "Year-end adjustments och tax"
-    ws_pl.cell(row=year_end_adjustments_row, column=3).font = bold_font
 
     # Lägg till summeringar från första till sista raden inom 8800-8898, i cellerna till höger
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
@@ -790,7 +767,7 @@ if last_8898_row is not None:
     # Lägg till "Net income" i fetstil på den nya raden
     ws_pl.cell(row=net_income_row, column=3).value = "Net income"
     ws_pl.cell(row=net_income_row, column=3).font = bold_font
-
+    
     # Summera "EBT" och "Year-end adjustments och tax" för varje kolumn
     for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
         ebt_cell = ws_pl.cell(row=ebt_row, column=col).coordinate  # Justering här för att peka på rätt rad
@@ -858,118 +835,421 @@ if first_8999_row is not None and last_8999_row is not None:
 ## Formatering: increase indent på alla kontorader i P&L reported
 format_account_names(ws_pl)
 
+
+
+
+
+
+
+
+
 # Byt till BS (reported) sheetet
-ws_bs = ws_pl_1000_2999  # Arbeta med BS (reported) sheetet
+ws_bs = ws_pl_1000_2999  # Kör med BS (reported) sheetet
 
-# Summeringar för konton mellan 1000-2999 i "BS (reported)" sheetet
+## STEG 1: Skapa delsummeringsrader för BS
 
-# Sektioner: Intangible assets (1000-1099), Tangible assets (1100-1299), Financial assets (1300-1399)
-# Total summering: Fixed assets
+# Definiera en funktion för att hantera varje kontogrupp
+def handle_account_group(account_number, first_row_var, row_offset, min_account, max_account, row):
+    if min_account <= account_number <= max_account:
+        if first_row_var[0] is None:
+            first_row_var[0] = row + row_offset
 
-first_intangible_row = None
-last_intangible_row = None
-first_tangible_row = None
-last_tangible_row = None
-first_financial_row = None
-last_financial_row = None
-fixed_assets_row = None
+# Initiera variablerna som listor för att kunna modifiera dem i funktionen
+first_intangible_row = [None]
+first_tangible_row = [None]
+first_financial_row = [None]
+first_inventory_row = [None]
+first_AR_row = [None]
+first_other_receivables_row = [None]
+first_prepaid_expenses_and_accrued_income_row = [None]
+first_short_term_investments_row = [None]
+first_cash_and_cash_equivalents_row = [None]
+first_other_equity_row = [None]
+first_restricted_equity_row = [None]
+first_non_restricted_equity_row = [None]
+first_untaxed_reserves_row = [None]
+first_provisions_row = [None]
+first_long_term_debt_row = [None]
+first_short_term_debt_row = [None]
+first_tax_payables_row = [None]
+first_other_payables_row = [None]
+first_accrued_expenses_and_deferred_income_row = [None]
 
-# Håll koll på förskjutningarna när nya rader läggs till
+# Definiera row_offset för att hålla reda på antal infogade rader
 row_offset = 0
 
-# Definiera de ursprungliga start- och slutraderna innan summeringsrader infogas
+# Skapa delsummeringsrader för respektive kontogrupper
 for row in range(first_row_bs, last_row_bs + 1):
-    account_number = ws_bs.cell(row=row + row_offset, column=2).value  # Arbeta med ws_bs (BS (reported))
+    account_number = ws_bs.cell(row=row, column=2).value  # Justera utan row_offset
     if account_number is not None:
         account_number = int(account_number)
 
-        if 1000 <= account_number <= 1099:
-            if first_intangible_row is None:
-                first_intangible_row = row + row_offset
-            last_intangible_row = row + row_offset
-        elif 1100 <= account_number <= 1299:
-            if first_tangible_row is None:
-                first_tangible_row = row + row_offset
-            last_tangible_row = row + row_offset
-        elif 1300 <= account_number <= 1399:
-            if first_financial_row is None:
-                first_financial_row = row + row_offset
-            last_financial_row = row + row_offset
+        # Anropa funktionen för varje kontogrupp
+        handle_account_group(account_number, first_intangible_row, row_offset, 1000, 1099, row)
+        handle_account_group(account_number, first_tangible_row, row_offset, 1100, 1299, row)
+        handle_account_group(account_number, first_financial_row, row_offset, 1300, 1399, row)
+        handle_account_group(account_number, first_inventory_row, row_offset, 1400, 1499, row)
+        handle_account_group(account_number, first_AR_row, row_offset, 1500, 1599, row)
+        handle_account_group(account_number, first_other_receivables_row, row_offset, 1600, 1699, row)
+        handle_account_group(account_number, first_prepaid_expenses_and_accrued_income_row, row_offset, 1700, 1799, row)
+        handle_account_group(account_number, first_short_term_investments_row, row_offset, 1800, 1899, row)
+        handle_account_group(account_number, first_cash_and_cash_equivalents_row, row_offset, 1900, 1999, row)
+        handle_account_group(account_number, first_other_equity_row, row_offset, 2000, 2079, row)
+        handle_account_group(account_number, first_restricted_equity_row, row_offset, 2080, 2089, row)
+        handle_account_group(account_number, first_non_restricted_equity_row, row_offset, 2090, 2099, row)
+        handle_account_group(account_number, first_untaxed_reserves_row, row_offset, 2100, 2199, row)
+        handle_account_group(account_number, first_provisions_row, row_offset, 2200, 2299, row)
+        handle_account_group(account_number, first_long_term_debt_row, row_offset, 2300, 2399, row)
+        handle_account_group(account_number, first_short_term_debt_row, row_offset, 2400, 2499, row)
+        handle_account_group(account_number, first_tax_payables_row, row_offset, 2500, 2799, row)
+        handle_account_group(account_number, first_other_payables_row, row_offset, 2800, 2899, row)
+        handle_account_group(account_number, first_accrued_expenses_and_deferred_income_row, row_offset, 2900, 2999, row)
 
-# Lägg till SUMIFS-formler för konton mellan 1000 och 2999 i BS (reported) sheetet
-for row in range(first_row_bs, last_row_bs + 1):
-    account_number = ws_bs.cell(row=row + row_offset, column=2).value
-    if account_number is not None:
-        account_number = int(account_number)
-        
-        # Loopa genom alla kolumner, justera beroende på om det är första kolumnen eller ej
-        for col in range(4, ws_bs.max_column + 1):  # Börja på kolumn D (kolumn 4)
-            col_letter = get_column_letter(col)
+# Summeringsintervall i omvänd ordning
+summary_ranges = [
+    (first_accrued_expenses_and_deferred_income_row[0], "Accrued expenses and deferred income"),
+    (first_other_payables_row[0], "Other payables"),
+    (first_tax_payables_row[0], "Tax payables"),
+    (first_short_term_debt_row[0], "Short-term debt"),
+    (first_long_term_debt_row[0], "Long-term debt"),
+    (first_provisions_row[0], "Provisions"),
+    (first_untaxed_reserves_row[0], "Untaxed reserves"),
+    (first_non_restricted_equity_row[0], "Non-restricted equity"),
+    (first_restricted_equity_row[0], "Restricted equity"),
+    (first_other_equity_row[0], "Other equity"),
+    (first_cash_and_cash_equivalents_row[0], "Cash and cash equivalents"),
+    (first_short_term_investments_row[0], "Short-term investments"),
+    (first_prepaid_expenses_and_accrued_income_row[0], "Prepaid expenses and accrued income"),
+    (first_other_receivables_row[0], "Other receivables"),
+    (first_AR_row[0], "Accounts receivable"),
+    (first_inventory_row[0], "Inventory"),
+    (first_financial_row[0], "Financial assets"),
+    (first_tangible_row[0], "Tangible assets"),
+    (first_intangible_row[0], "Intangible assets")
+]
+
+# Iterera bakifrån och infoga delsummeringsraderna samt en tom rad ovanför
+for first_row, label in summary_ranges:
+    if first_row is not None:
+        ws_bs.insert_rows(first_row)  # Infoga summeringsrad
+        ws_bs.cell(row=first_row, column=3).value = label
+        # ws_bs.cell(row=first_row, column=3).font = bold_font
+        row_offset += 1  # Uppdatera om det behövs för summeringsraden
+
+        # Infoga en tom rad ovanför summeringsraden
+        ws_bs.insert_rows(first_row)
+        row_offset += 1  # Uppdatera igen för att hantera den extra tomma raden
+
+
+# STEG 2: Skapa huvudsummeringarna i BS
+
+
+# Funktion för att hitta den sista raden baserat på kontonumren
+def find_last_row(ws, min_account, max_account, first_row_bs):
+    last_row = None
+    for row in range(first_row_bs, ws.max_row + 1):  # Dynamiskt uppdaterad ws.max_row
+        account_number = ws.cell(row=row, column=2).value
+        if account_number is not None and min_account <= int(account_number) <= max_account:
+            last_row = row
+    return last_row
+
+# Huvudsummeringsrader, en tom rad och formatering
+def huvudsummeringsrader(ws, last_row, label, insert_blank_row=True):
+    if last_row is not None:
+        # Infoga huvudsummeringsrad
+        ws.insert_rows(last_row + 1)  # +1 för att placera summeringsraden under den sista kontoraden
+        ws.cell(row=last_row + 1, column=3).value = label
+        ws.cell(row=last_row + 1, column=3).font = bold_font
+
+        # Infoga en extra tom rad under summeringsraden om det behövs
+        if insert_blank_row:
+            ws.insert_rows(last_row + 2)
+
+        # Lägg till border (tunn topp, tjock botten)
+        for col in range(2, ws.max_column + 1):
+            cell = ws.cell(row=last_row + 1, column=col)
+            cell.border = custom_border
+
+# Fixed assets: Konton mellan 1000–1399
+last_fixed_assets_row = find_last_row(ws_bs, 1000, 1399, first_row_bs)
+# Total assets: Konton mellan 1400–1999
+last_total_assets_row = find_last_row(ws_bs, 1400, 1999, first_row_bs)
+# Equity: Konton mellan 2000–2099
+last_equity_row = find_last_row(ws_bs, 2000, 2099, first_row_bs)
+# Liabilities (långfristiga och kortfristiga skulder): Konton från 2100 till 2999
+last_liabilities_row = find_last_row(ws_bs, 2100, 2999, first_row_bs)
+
+# Infoga summeringarna underifrån och upp
+
+# Kontroll för Total equity and liabilities (efter det sista skuldkontot)
+if last_liabilities_row is not None:
+    huvudsummeringsrader(ws_bs, last_liabilities_row, "Total equity and liabilities")
+
+# Kontroll för Equity
+if last_equity_row is not None:
+    huvudsummeringsrader(ws_bs, last_equity_row, "Equity")
+
+# Kontroll för Total assets
+if last_total_assets_row is not None:
+    huvudsummeringsrader(ws_bs, last_total_assets_row, "Total assets", insert_blank_row=False)
+
+# Kontroll för Fixed assets (sista summeringskategorin, ingen extra rad)
+if last_fixed_assets_row is not None:
+    huvudsummeringsrader(ws_bs, last_fixed_assets_row, "Fixed assets", insert_blank_row=False)
+
+# STEG 3: skapa de faktiska summaformlerna för delsummeringsrader
+
+from openpyxl.utils import get_column_letter
+
+# Funktion för att skapa summor för en enda delsummeringsrad (kan användas för olika rubriker)
+def skapa_huvudsummeringar(ws, max_column, asset_type):
+    first_row = None  # Standardvärde om rubriken inte hittas
+
+    # Hitta raden där det står "asset_type" i kolumn C
+    for row in range(1, ws.max_row + 1):
+        if ws.cell(row=row, column=3).value == asset_type:
+            first_row = row  # Raden där "asset_type" finns
+            break
+
+    # Om ingen rad hittades, hoppa över denna körning
+    if first_row is None:
+        return
+
+    # Hitta start- och slutrader i kolumn B
+    start_row = first_row + 1  # Startraden är raden efter "asset_type"
+    end_row = start_row
+
+    # Fortsätt neråt i kolumn B tills en tom cell hittas
+    while ws.cell(row=end_row, column=2).value is not None:
+        end_row += 1
+    end_row -= 1  # Justera för att inte inkludera den tomma cellen
+
+    # Kontrollera om intervallet är giltigt
+    if end_row >= start_row:
+        for col in range(4, max_column + 1):  # Kolumn D och framåt
+            start_letter = get_column_letter(col)
+            end_letter = get_column_letter(col)
+            formula = f"=SUM({start_letter}{start_row}:{end_letter}{end_row})"
+            cell = ws.cell(row=first_row, column=col)
+            cell.value = formula
+
+            # Applicera nummerformatet
+            cell.number_format = '#,##0;(#,##0);-'
+
+# Kör funktionen på arbetsbladet för alla typer
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Intangible assets")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Tangible assets")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Financial assets")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Inventory")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Accounts receivable")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Other receivables")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Prepaid expenses and accrued income")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Short-term investments")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Cash and cash equivalents")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Other equity")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Restricted equity")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Non-restricted equity")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Untaxed reserves")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Provisions")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Long-term debt")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Short-term debt")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Tax payables")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Other payables")
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Accrued expenses and deferred income")
+
+
+# STEG 4: skapa de faktiska summaformlerna för huvudsummeringsrader
+
+# Funktion för att summera huvudsummeringsrader
+def summera_huvudsummeringar(ws, max_column):
+    # Definiera de rader som ska summeras för varje huvudsummeringsrad
+    summary_rows = {
+        "Fixed assets": ["Intangible assets", "Tangible assets", "Financial assets"],
+        "Total assets": ["Fixed assets", "Inventory", "Accounts receivable", "Other receivables", "Prepaid expenses and accrued income", "Short-term investments", "Cash and cash equivalents"],
+        "Equity": ["Other equity", "Restricted equity", "Non-restricted equity"],
+        "Total equity and liabilities": ["Equity", "Untaxed reserves", "Provisions", "Long-term debt", "Short-term debt", "Tax payables", "Other payables", "Accrued expenses and deferred income"]
+    }
+
+    # Gå igenom varje huvudsummering och skapa summeringar
+    for summary_type, assets_to_sum in summary_rows.items():
+        # Hitta raden där huvudsummeringen ska ske (dvs. där "summary_type" finns)
+        summary_row = None
+        for row in range(1, ws.max_row + 1):
+            if ws.cell(row=row, column=3).value == summary_type:
+                summary_row = row
+                break
+
+        # Om ingen rad hittades för huvudsummeringen, hoppa över denna iteration
+        if summary_row is None:
+            print(f"Skipping {summary_type}: Not found in the sheet.")
+            continue
+
+        # Hitta raderna för de tillgångar som ska summeras, ignorera saknade rader
+        asset_rows = []
+        for asset in assets_to_sum:
+            for row in range(1, ws.max_row + 1):
+                if ws.cell(row=row, column=3).value == asset:
+                    asset_rows.append(row)
+                    break
+
+        # Om inga giltiga rader hittades, hoppa över denna iteration
+        if len(asset_rows) == 0:
+            print(f"Skipping {summary_type}: No valid rows found for summing.")
+            continue
+
+        # Skapa summeringar för varje kolumn (D och framåt)
+        for col in range(4, max_column + 1):  # Kolumn D och framåt
+            start_letter = get_column_letter(col)
+            sum_range = ",".join([f"{start_letter}{row}" for row in asset_rows])
+
+            # Skapa formeln för summeringen av de tillgängliga raderna
+            formula = f"=SUM({sum_range})"
+            ws.cell(row=summary_row, column=col).value = formula
+
+            # Applicera nummerformatet
+            ws.cell(row=summary_row, column=col).number_format = '#,##0;(#,##0);-'
+
+            # Applicera fetstil på cellerna i huvudsummeringsraden
+            ws.cell(row=summary_row, column=col).font = bold_font
+
+# Kör funktionen på arbetsbladet för alla huvudsummeringsrader
+summera_huvudsummeringar(ws_bs, ws_bs.max_column)
+
+# STEG 5: hämta in all data med hjälp av SUMIFS formler
+
+# Funktion för att applicera SUMIFS-formler och nummerformat
+def applicera_sumifs_och_nummerformat(ws, first_row, first_col, last_col, year_short):
+    # Hitta sista raden med ett kontonummer i kolumn B
+    last_row = ws.max_row
+    while ws.cell(row=last_row, column=2).value is None and last_row > first_row:
+        last_row -= 1  # Gå uppåt tills vi hittar den sista raden med data i kolumn B
+
+    # Steg 1: Skapa SUMIFS-formler för både IB och Transaction i samma cell i kolumn D
+    target_column = 4  # Kolumn D (kolumn 4)
+    for row in range(first_row, last_row + 1):
+        if ws.cell(row=row, column=2).value is not None:  # Kontrollera om det finns ett kontonummer i kolumn B
+            # IB SUMIFS-formeln
+            formula_ib = f"=SUMIFS(IB!D:D, IB!$B:$B, 0, IB!$C:$C, 'BS (reported)'!$B{row})"
             
-            # Om vi är på kolumn D (kolumn 4), använd IB-formeln
-            if col == 4:
-                formula = f"=SUMIFS(IB!D:D, IB!$B:$B, 0, IB!$C:$C, 'BS (reported)'!$B{row + row_offset})"
-            # För alla andra kolumner, använd Transaction-formeln
-            else:
-                formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row + row_offset},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
+            # Transaction SUMIFS-formeln
+            formula_transactions = (f" + SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,"
+                                    f"'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},"
+                                    f"'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!D$4)")
             
-            # Applicera formeln till cellen
-            ws_bs.cell(row=row + row_offset, column=col).value = formula
-
-# Summering för "Intangible assets"
-if first_intangible_row is not None:
-    intangible_assets_row = first_intangible_row  # Lägg summeringsraden ovanför första raden i sektionen
-    ws_bs.insert_rows(intangible_assets_row)
-    
-    # Uppdatera radoffset när en rad läggs till
-    row_offset += 1
-
-    # Justera first och last row för intangible assets eftersom en ny rad har lagts till
-    first_intangible_row += 1
-    last_intangible_row += 1
-
-    # Sätt summeringsrubriken
-    ws_bs.cell(row=intangible_assets_row, column=3).value = "Intangible assets"
-    ws_bs.cell(row=intangible_assets_row, column=3).font = bold_font
-    
-    # Summera värdena i kolumnerna
-    for col in range(4, ws_bs.max_column + 1):
-        # Inkludera hela intervallet från den rad som representerar "intangible assets"
-        sum_range = f"{get_column_letter(col)}{intangible_assets_row + 1}:{get_column_letter(col)}{last_intangible_row}"
-        
-        formula = f"=SUM({sum_range})"
-        cell = ws_bs.cell(row=intangible_assets_row, column=col)
-        cell.value = formula
-        cell.number_format = '#,##0;(#,##0);-'  # Sätt nummerformatet
-        cell.font = bold_font  # Gör summeringen fetstil
-
-    # Justera SUMIFS-formler för alla efterföljande rader efter att summeringsrad lagts till
-    for row in range(intangible_assets_row + 1, last_row_bs + row_offset + 1):
-        account_number = ws_bs.cell(row=row, column=2).value
-        if account_number is not None:
-            account_number = int(account_number)
+            # Kombinera båda formlerna med ett likhetstecken i början och plus-tecken emellan
+            combined_formula = f"{formula_ib}{formula_transactions}"
             
-            # Loopa genom alla kolumner, justera beroende på om det är första kolumnen eller ej
-            for col in range(4, ws_bs.max_column + 1):
+            # Tilldela den kombinerade formeln till kolumn D
+            ws.cell(row=row, column=target_column).value = combined_formula
+
+    # Steg 2: Applicera SUMIFS-formler för "Transaction" data i kolumner från E och framåt
+    for row in range(first_row, last_row + 1):
+        if ws.cell(row=row, column=2).value is not None:  # Kontrollera om det finns ett kontonummer i kolumn B
+            for col in range(first_col, last_col + 1):  # Startar från kolumn E
                 col_letter = get_column_letter(col)
+                formula_transactions = (f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,"
+                                        f"'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},"
+                                        f"'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
+                                        f"+{get_column_letter(col - 1)}{row}")                                        
+                ws.cell(row=row, column=col).value = formula_transactions  # Lägger formeln i kolumner E och framåt
+
+    # Steg 3: Applicera nummerformatet #,##0;(#,##0);- på alla celler
+    for row in range(6, last_row + 1):  # Nu använder vi last_row för att täcka hela intervallet
+        for col in range(4, ws.max_column + 1):  # Startar på kolumn D (kolumn 4)
+            cell = ws.cell(row=row, column=col)
+            cell.number_format = '#,##0;(#,##0);-'
+
+# Kör funktionen
+applicera_sumifs_och_nummerformat(ws_bs, first_row_bs, first_col_bs, last_col_bs, year_short)
+
+# STEG 6: skapa årssummor
+
+# Funktion för att skapa summakolumner för helåret
+def skapa_arsummer(ws, first_row, col_month, last_col):
+    # Skapa en tunn överkant och en tjock underkant för summacellerna
+    bold_border = Border(top=Side(style='thin'), bottom=Side(style='thick'))
+    bold_font = Font(bold=True)
+
+    # Steg 1: Hitta hur många decembermånader som finns på rad 4
+    december_columns = []
+    for col in range(col_month, last_col + 1):
+        if str(ws.cell(row=4, column=col).value).endswith('12'):  # Hitta kolumner som slutar med '12' (december)
+            december_columns.append(col)
+
+    # Steg 2: Hitta sista månadskolumnen och hoppa över en kolumn
+    for index, col in enumerate(december_columns):
+        year = str(ws.cell(row=4, column=col).value)[:4]  # Extrahera år från cellvärdet (t.ex. "2021")
+        sum_col = col + 2  # Hoppar över en kolumn och skapar årssummakolumnen
+
+        year = int(str(ws.cell(row=4, column=col).value)[:4])  # Extrahera år som ett tal
+        ws.cell(row=4, column=sum_col).value = year  # Lagra årtalet som ett heltal
+
+        # Steg 3: Skapa SUMIFS-formler för helåret och applicera dem på alla rader med en text i kolumn C
+        for row in range(first_row, ws.max_row + 1):
+            if ws.cell(row=row, column=3).value is not None:  # Kontrollera om det finns text i kolumn C
+                # Skapa SUMIFS-formeln med rätt format
+                cell_ref = f"{get_column_letter(sum_col)}4"  # Skapa cellreferensen (t.ex. Q4)
+                formula = (f"=SUMIFS(D{row}:O{row}, D4:O4, \">=\"&{cell_ref}*100+1, "
+                f"D4:O4, \"<=\"&{cell_ref}*100+12)")  # Använd cellreferensen i SUMIFS
                 
-                # Om vi är på kolumn D (kolumn 4), använd IB-formeln
-                if col == 4:
-                    formula = f"=SUMIFS(IB!D:D, IB!$B:$B, 0, IB!$C:$C, 'BS (reported)'!$B{row})"
-                # För alla andra kolumner, använd Transaction-formeln
-                else:
-                    formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
-                
-                # Uppdatera formeln i cellen
-                ws_bs.cell(row=row, column=col).value = formula
+                # Tilldela formeln till summakolumnen
+                ws.cell(row=row, column=sum_col).value = formula
+
+                # Steg 4: Applicera nummerformatet '#,##0;(#,##0);-' till summakolumnen
+                ws.cell(row=row, column=sum_col).number_format = '#,##0;(#,##0);-'
+
+                # Steg 5: Kontrollera om texten i kolumn C är en av de speciella raderna
+                if ws.cell(row=row, column=3).value in ["Fixed assets", "Total assets", "Equity", "Total equity and liabilities"]:
+                    # Applicera fetstil och gräns
+                    ws.cell(row=row, column=sum_col).font = bold_font
+                    ws.cell(row=row, column=sum_col).border = bold_border
+
+# Kör funktionen
+skapa_arsummer(ws_bs, first_row_bs, first_col_bs, last_col_bs)
+
+## Steg 7: formatera rad 2, 3 och 4
+
+# Funktion för att formatera rader 2, 3 och 4
+def formatera_rader(ws, last_summary_col):
+    # Definiera grå fyllning (den är redan definierad tidigare, men jag tar med den här för sammanhanget)
+    gray_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+    
+    # Definiera borders
+    solid_top_border = Border(top=Side(style='thin'))  # Heldragen övre gräns
+    dashed_top_bottom_border = Border(top=Side(style='dashed'), bottom=Side(style='dashed'))  # Streckad top och bottom
+    solid_bottom_border = Border(bottom=Side(style='thin'))  # Heldragen undre gräns
+
+    # Format för rad 2: top border (heldragen) och grå fyllning
+    for col in range(2, last_summary_col + 1):
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen (P i detta fall)
+            ws.cell(row=2, column=col).fill = gray_fill
+            ws.cell(row=2, column=col).border = solid_top_border
+
+    # Format för rad 3: top och bottom border (streckad) och grå fyllning
+    for col in range(2, last_summary_col + 1):
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen (P i detta fall)
+            ws.cell(row=3, column=col).fill = gray_fill
+            ws.cell(row=3, column=col).border = dashed_top_bottom_border
+
+    # Format för rad 4: bottom border (heldragen) och grå fyllning
+    for col in range(2, last_summary_col + 1):
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen (P i detta fall)
+            ws.cell(row=4, column=col).fill = gray_fill
+            ws.cell(row=4, column=col).border = solid_bottom_border
+
+# Antag att vi känner till sista kolumnen för summeringskolumner (t.ex. Q i vårt exempel)
+last_summary_col = 17  # Kolumn Q motsvarar kolumn 17
+
+# Kör formateringsfunktionen
+formatera_rader(ws_bs, last_summary_col)
+
+
+
+
 
 
 ## Formatering: increase indent på alla kontorader i BS reported
 format_account_names(ws_bs)
-
-
-
-
 
 
 
