@@ -837,6 +837,92 @@ format_account_names(ws_pl)
 
 
 
+# skapa årssummor
+
+# Funktion för att skapa summakolumner för helåret (anpassad för P&L)
+def skapa_arsummer_pl(ws, first_row, col_month, last_col):
+    # Skapa en tunn överkant och en tjock underkant för summacellerna
+    bold_border = Border(top=Side(style='thin'), bottom=Side(style='thick'))
+    bold_font = Font(bold=True)
+
+    # Steg 1: Hitta hur många decembermånader som finns på rad 4
+    december_columns = []
+    for col in range(col_month, last_col + 1):
+        if str(ws.cell(row=4, column=col).value).endswith('12'):  # Hitta kolumner som slutar med '12' (december)
+            december_columns.append(col)
+
+    # Steg 2: Hitta sista månadskolumnen och hoppa över en kolumn
+    for index, col in enumerate(december_columns):
+        year = str(ws.cell(row=4, column=col).value)[:4]  # Extrahera år från cellvärdet (t.ex. "2021-12")
+        sum_col = col + 2  # Hoppar över en kolumn och skapar årssummakolumnen        
+        ws.cell(row=4, column=sum_col).value = int(year[:4])  # Lagra årtalet som ett heltal
+
+        # Steg 3: Skapa SUMIFS-formler för helåret och applicera dem på alla rader med en text i kolumn C
+        for row in range(first_row, ws.max_row + 1):
+            if ws.cell(row=row, column=3).value is not None:  # Kontrollera om det finns text i kolumn C
+                # Hitta sista kolumnen med data i den aktuella raden
+                last_data_col = ws.max_column
+                while ws.cell(row=row, column=last_data_col).value is None and last_data_col > 1:
+                    last_data_col -= 1
+
+                # Skapa SUMIFS-formeln dynamiskt med rätt intervall
+                first_col_letter = get_column_letter(4)  # Kolumn D
+                last_col_letter = get_column_letter(last_data_col)  # Dynamisk sista kolumn baserat på datan
+                cell_ref = f"{get_column_letter(sum_col)}4"  # Skapa cellreferensen (t.ex. Q4)
+                
+                # Skapa SUMIFS-formeln med dynamiskt slut på kolumnintervallet
+                formula = (f"=SUMIFS({first_col_letter}{row}:{last_col_letter}{row}, {first_col_letter}4:{last_col_letter}4, \">=\"&{cell_ref}*100+1, "
+                f"{first_col_letter}4:{last_col_letter}4, \"<=\"&{cell_ref}*100+12)")
+                
+                # Tilldela formeln till summakolumnen
+                ws.cell(row=row, column=sum_col).value = formula
+
+                # Steg 4: Applicera nummerformatet '#,##0;(#,##0);-' till summakolumnen
+                ws.cell(row=row, column=sum_col).number_format = '#,##0;(#,##0);-' 
+
+                # Steg 5: Kontrollera om texten i kolumn C är en av de feta raderna
+                if ws.cell(row=row, column=3).value in ["Total revenue", "Gross profit", "EBITDA", "EBIT", "EBT", "Net income"]:
+                    # Applicera fetstil och gräns
+                    ws.cell(row=row, column=sum_col).font = bold_font
+                    ws.cell(row=row, column=sum_col).border = bold_border
+
+# Använd funktionen för P&L-arket
+ws_pl = wb['P&L (reported)']  # Ändra till ditt P&L-blad
+
+# Definiera first_row, first_col, och last_col för P&L
+first_row_pl = 7  # Exempel på var data börjar för P&L
+first_col_pl = 4  # Kolumn D är ofta första data-kolumnen
+last_col_pl = ws_pl.max_column  # Automatisk identifiering av sista kolumnen med data
+
+# Kör funktionen för att skapa årssummor i P&L
+skapa_arsummer_pl(ws_pl, first_row_pl, first_col_pl, last_col_pl)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1178,19 +1264,25 @@ def skapa_arsummer(ws, first_row, col_month, last_col):
 
     # Steg 2: Hitta sista månadskolumnen och hoppa över en kolumn
     for index, col in enumerate(december_columns):
-        year = str(ws.cell(row=4, column=col).value)[:4]  # Extrahera år från cellvärdet (t.ex. "2021")
-        sum_col = col + 2  # Hoppar över en kolumn och skapar årssummakolumnen
-
-        year = int(str(ws.cell(row=4, column=col).value)[:4])  # Extrahera år som ett tal
-        ws.cell(row=4, column=sum_col).value = year  # Lagra årtalet som ett heltal
+        year = str(ws.cell(row=4, column=col).value)[:6]  # Extrahera år från cellvärdet (t.ex. "2021-12")
+        sum_col = col + 2  # Hoppar över en kolumn och skapar årssummakolumnen        
+        ws.cell(row=4, column=sum_col).value = int(year[:6])  # Lagra årtalet som ett heltal
 
         # Steg 3: Skapa SUMIFS-formler för helåret och applicera dem på alla rader med en text i kolumn C
         for row in range(first_row, ws.max_row + 1):
             if ws.cell(row=row, column=3).value is not None:  # Kontrollera om det finns text i kolumn C
-                # Skapa SUMIFS-formeln med rätt format
+                # Hitta sista kolumnen med data i den aktuella raden
+                last_data_col = ws.max_column
+                while ws.cell(row=row, column=last_data_col).value is None and last_data_col > 1:
+                    last_data_col -= 1
+
+                # Skapa SUMIFS-formeln dynamiskt med rätt intervall
+                first_col_letter = get_column_letter(4)  # Kolumn D
+                last_col_letter = get_column_letter(last_data_col)  # Dynamisk sista kolumn baserat på datan
                 cell_ref = f"{get_column_letter(sum_col)}4"  # Skapa cellreferensen (t.ex. Q4)
-                formula = (f"=SUMIFS(D{row}:O{row}, D4:O4, \">=\"&{cell_ref}*100+1, "
-                f"D4:O4, \"<=\"&{cell_ref}*100+12)")  # Använd cellreferensen i SUMIFS
+                
+                # Skapa SUMIFS-formeln med dynamiskt slut på kolumnintervallet
+                formula = f"=SUMIFS({first_col_letter}{row}:{last_col_letter}{row}, D4:{last_col_letter}4, {cell_ref})"
                 
                 # Tilldela formeln till summakolumnen
                 ws.cell(row=row, column=sum_col).value = formula
@@ -1243,36 +1335,8 @@ last_summary_col = 17  # Kolumn Q motsvarar kolumn 17
 # Kör formateringsfunktionen
 formatera_rader(ws_bs, last_summary_col)
 
-
-
-
-
-
 ## Formatering: increase indent på alla kontorader i BS reported
 format_account_names(ws_bs)
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Funktion för att visa animationen
 def animate():
