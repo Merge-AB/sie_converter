@@ -7,6 +7,7 @@ from tqdm import tqdm
 import time
 import sys
 import threading
+import re
 
 # Läs in CSV-filer
 ib_df = pd.read_csv('sie_to_pnl/data/IB.csv', encoding='ascii')
@@ -64,19 +65,19 @@ for cell in ws[1]:
     cell.border = thin_border
     cell.alignment = Alignment(horizontal='left')  # Vänsterjustera texten
 
-# Lägg till ett nytt blad för IB.csv-datan
+# Lägg till ett nytt sheet för IB.csv-datan
 ws_ib = wb.create_sheet(title='IB')
 
-# Skriv headers från IB.csv-datan till det nya bladet
+# Skriv headers från IB.csv-datan till det nya sheetet
 for col_idx, header in enumerate(ib_df.columns, start=1):
     ws_ib.cell(row=1, column=col_idx, value=header)
 
-# Skriv IB.csv-datan till det nya bladet, efter headers
+# Skriv IB.csv-datan till det nya sheetet, efter headers
 for r_idx, row in enumerate(ib_df.values, start=2):  # Startar från rad 2 för att lämna plats för headers
     for c_idx, value in enumerate(row, start=1):
         ws_ib.cell(row=r_idx, column=c_idx, value=value)
 
-## Auto-resize kolumnbredd för IB-bladet
+## Auto-resize kolumnbredd för IB-sheetet
 for col_idx, col in enumerate(ws_ib.iter_cols(min_row=1, max_row=ws_ib.max_row, min_col=1, max_col=ws_ib.max_column), start=1):
     max_length = 0
     column = col_idx  # Kolumnindex
@@ -287,7 +288,7 @@ for row in range(6, ws_pl.max_row + 1):
 
 ## Fyll på med data för BS (reported)-sheetet
 
-# Steg 1: Lägg till formeln från "Transaction {year_short} - Aggregated" bladet i cellerna och kopiera nedåt och till höger för BS (reported)
+# Steg 1: Lägg till formeln från "Transaction {year_short} - Aggregated" sheetet i cellerna och kopiera nedåt och till höger för BS (reported)
 first_row_bs = 7
 last_row_bs = ws_pl_1000_2999.max_row
 first_col_bs = 5  # E
@@ -299,7 +300,7 @@ last_col_bs = first_col_bs + len(unique_months) - 2  # -2 eftersom vi hoppar öv
 #         formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
 #         ws_pl_1000_2999.cell(row=row, column=col).value = formula
 
-# # Steg 2: Lägg till SUMIFS-formeln från "IB" bladet i kolumn D och fyll ner för alla konton i BS (reported)
+# # Steg 2: Lägg till SUMIFS-formeln från "IB" sheetet i kolumn D och fyll ner för alla konton i BS (reported)
 # target_column = 4  # Kolumn D (kolumn 4)
 
 # for row in range(first_row_bs, last_row_bs + 1):
@@ -418,6 +419,7 @@ if last_3999_row is not None:
         cell = ws_pl.cell(row=total_revenue_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
+        cell.font = Font(bold=True)
 
     # Lägg till den anpassade bordern (tunn topp, tjock botten) på "Total revenue"-raden
     for col in range(2, ws_pl.max_column + 1):
@@ -506,6 +508,7 @@ if last_4999_row is not None:
         cell = ws_pl.cell(row=gross_profit_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
+        cell.font = Font(bold=True)
 
     # Lägg till den anpassade bordern (tunn topp, tjock botten) på "Gross profit 1"-raden
     for col in range(2, ws_pl.max_column + 1):
@@ -563,6 +566,7 @@ if last_7799_row is not None:
         cell = ws_pl.cell(row=ebitda_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
+        cell.font = Font(bold=True)
 
     # Lägg till den anpassade bordern (tunn topp, tjock botten) på "Gross profit 2"-raden
     for col in range(2, ws_pl.max_column + 1):
@@ -630,6 +634,7 @@ if last_7899_row is not None:
         cell = ws_pl.cell(row=ebit_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
+        cell.font = Font(bold=True)
 
     # Lägg till den anpassade bordern (tunn topp, tjock botten) på "EBIT"-raden
     for col in range(2, ws_pl.max_column + 1):
@@ -776,6 +781,7 @@ if last_8898_row is not None:
         cell = ws_pl.cell(row=net_income_row, column=col)
         cell.value = formula
         cell.number_format = '#,##0;(#,##0);-'  # Tillämpa nummerformatet
+        cell.font = Font(bold=True)
 
     # Lägg till den anpassade bordern (tunn topp, tjock botten) på "Net income"-raden
     for col in range(2, ws_pl.max_column + 1):
@@ -837,10 +843,10 @@ format_account_names(ws_pl)
 
 
 
-# skapa årssummor
+## Skapa årssummor P&L
 
 # Funktion för att skapa summakolumner för helåret (anpassad för P&L)
-def skapa_arsummer_pl(ws, first_row, col_month, last_col):
+def skapa_arsummor_pl(ws, first_row, col_month, last_col):
     # Skapa en tunn överkant och en tjock underkant för summacellerna
     bold_border = Border(top=Side(style='thin'), bottom=Side(style='thick'))
     bold_font = Font(bold=True)
@@ -887,7 +893,7 @@ def skapa_arsummer_pl(ws, first_row, col_month, last_col):
                     ws.cell(row=row, column=sum_col).border = bold_border
 
 # Använd funktionen för P&L-arket
-ws_pl = wb['P&L (reported)']  # Ändra till ditt P&L-blad
+ws_pl = wb['P&L (reported)']  # Ändra till ditt P&L-sheet
 
 # Definiera first_row, first_col, och last_col för P&L
 first_row_pl = 7  # Exempel på var data börjar för P&L
@@ -895,10 +901,55 @@ first_col_pl = 4  # Kolumn D är ofta första data-kolumnen
 last_col_pl = ws_pl.max_column  # Automatisk identifiering av sista kolumnen med data
 
 # Kör funktionen för att skapa årssummor i P&L
-skapa_arsummer_pl(ws_pl, first_row_pl, first_col_pl, last_col_pl)
+skapa_arsummor_pl(ws_pl, first_row_pl, first_col_pl, last_col_pl)
 
 
+## Formatera rad 2, 3 och 4
 
+# Funktion för att hitta sista kolumnen med ett värde som liknar ett år eller år-månad i rad 4
+def hitta_sista_summaringskolumn(ws, row=4):
+    last_col = ws.max_column  # Maxkolumn baserat på sheetets data
+    year_pattern = re.compile(r'^(20\d{2})(\d{2})?$')  # Regex för att matcha år (ex: 2021, 202112)
+
+    for col in range(last_col, 1, -1):
+        cell_value = ws.cell(row=row, column=col).value
+        if cell_value is not None and year_pattern.match(str(cell_value)):
+            return col
+    return 2  # Om inga värden finns, återgå till kolumn 2 som standard
+
+# Funktion för att formatera rader 2, 3 och 4
+def formatera_rader(ws):
+    # Definiera grå fyllning
+    gray_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
+    
+    # Definiera borders
+    solid_top_border = Border(top=Side(style='thin'))  # Heldragen övre gräns
+    dashed_top_bottom_border = Border(top=Side(style='dashed'), bottom=Side(style='dashed'))  
+    solid_bottom_border = Border(bottom=Side(style='thin'))  # Heldragen undre gräns
+
+    # Hitta dynamiskt sista summeringskolumnen baserat på rad 4
+    last_summary_col = hitta_sista_summaringskolumn(ws, row=4)
+
+    # Format för rad 2: top border (heldragen) och grå fyllning
+    for col in range(2, last_summary_col + 1):
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen 
+            ws.cell(row=2, column=col).fill = gray_fill
+            ws.cell(row=2, column=col).border = solid_top_border
+
+    # Format för rad 3: top och bottom border (streckad) och grå fyllning
+    for col in range(2, last_summary_col + 1):
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen 
+            ws.cell(row=3, column=col).fill = gray_fill
+            ws.cell(row=3, column=col).border = dashed_top_bottom_border
+
+    # Format för rad 4: bottom border (heldragen) och grå fyllning
+    for col in range(2, last_summary_col + 1):
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen 
+            ws.cell(row=4, column=col).fill = gray_fill
+            ws.cell(row=4, column=col).border = solid_bottom_border
+
+# Kör formateringsfunktionen dynamiskt
+formatera_rader(ws_pl)
 
 
 
@@ -1122,7 +1173,7 @@ def skapa_huvudsummeringar(ws, max_column, asset_type):
             # Applicera nummerformatet
             cell.number_format = '#,##0;(#,##0);-'
 
-# Kör funktionen på arbetsbladet för alla typer
+# Kör funktionen på sheetet för alla typer
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Intangible assets")
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Tangible assets")
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Financial assets")
@@ -1198,7 +1249,7 @@ def summera_huvudsummeringar(ws, max_column):
             # Applicera fetstil på cellerna i huvudsummeringsraden
             ws.cell(row=summary_row, column=col).font = bold_font
 
-# Kör funktionen på arbetsbladet för alla huvudsummeringsrader
+# Kör funktionen på sheetet för alla huvudsummeringsrader
 summera_huvudsummeringar(ws_bs, ws_bs.max_column)
 
 # STEG 5: hämta in all data med hjälp av SUMIFS formler
@@ -1251,7 +1302,7 @@ applicera_sumifs_och_nummerformat(ws_bs, first_row_bs, first_col_bs, last_col_bs
 # STEG 6: skapa årssummor
 
 # Funktion för att skapa summakolumner för helåret
-def skapa_arsummer(ws, first_row, col_month, last_col):
+def skapa_arsummor(ws, first_row, col_month, last_col):
     # Skapa en tunn överkant och en tjock underkant för summacellerna
     bold_border = Border(top=Side(style='thin'), bottom=Side(style='thick'))
     bold_font = Font(bold=True)
@@ -1297,43 +1348,54 @@ def skapa_arsummer(ws, first_row, col_month, last_col):
                     ws.cell(row=row, column=sum_col).border = bold_border
 
 # Kör funktionen
-skapa_arsummer(ws_bs, first_row_bs, first_col_bs, last_col_bs)
+skapa_arsummor(ws_bs, first_row_bs, first_col_bs, last_col_bs)
 
 ## Steg 7: formatera rad 2, 3 och 4
 
-# Funktion för att formatera rader 2, 3 och 4
-def formatera_rader(ws, last_summary_col):
-    # Definiera grå fyllning (den är redan definierad tidigare, men jag tar med den här för sammanhanget)
+# Funktion för att hitta sista kolumnen med ett värde som liknar ett år eller år-månad på rad 4
+def hitta_sista_summaringskolumn(ws, row=4):
+    last_col = ws.max_column  # Maxkolumn baserat på sheetets data
+    year_pattern = re.compile(r'^(20\d{2})(\d{2})?$')  # Regex för att matcha år (ex: 2021, 202112)
+
+    for col in range(last_col, 1, -1):
+        cell_value = ws.cell(row=row, column=col).value
+        if cell_value is not None and year_pattern.match(str(cell_value)):
+            return col
+    return 2  # Om inga värden finns, återgå till kolumn 2 som standard
+
+# Funktion för att formatera rader 2, 3 och 4 i balansräkningen
+def formatera_rader(ws):
+    # Definiera grå fyllning
     gray_fill = PatternFill(start_color="F2F2F2", end_color="F2F2F2", fill_type="solid")
     
     # Definiera borders
     solid_top_border = Border(top=Side(style='thin'))  # Heldragen övre gräns
-    dashed_top_bottom_border = Border(top=Side(style='dashed'), bottom=Side(style='dashed'))  # Streckad top och bottom
+    dashed_top_bottom_border = Border(top=Side(style='dashed'), bottom=Side(style='dashed'))  
     solid_bottom_border = Border(bottom=Side(style='thin'))  # Heldragen undre gräns
+
+    # Hitta dynamiskt sista summeringskolumnen baserat på rad 4
+    last_summary_col = hitta_sista_summaringskolumn(ws, row=4)
 
     # Format för rad 2: top border (heldragen) och grå fyllning
     for col in range(2, last_summary_col + 1):
-        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen (P i detta fall)
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen 
             ws.cell(row=2, column=col).fill = gray_fill
             ws.cell(row=2, column=col).border = solid_top_border
 
     # Format för rad 3: top och bottom border (streckad) och grå fyllning
     for col in range(2, last_summary_col + 1):
-        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen (P i detta fall)
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen 
             ws.cell(row=3, column=col).fill = gray_fill
             ws.cell(row=3, column=col).border = dashed_top_bottom_border
 
     # Format för rad 4: bottom border (heldragen) och grå fyllning
     for col in range(2, last_summary_col + 1):
-        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen (P i detta fall)
+        if col != last_summary_col - 1:  # Hoppa över kolumnen innan summakolumnen 
             ws.cell(row=4, column=col).fill = gray_fill
             ws.cell(row=4, column=col).border = solid_bottom_border
 
-# Antag att vi känner till sista kolumnen för summeringskolumner (t.ex. Q i vårt exempel)
-last_summary_col = 17  # Kolumn Q motsvarar kolumn 17
-
-# Kör formateringsfunktionen
-formatera_rader(ws_bs, last_summary_col)
+# Kör formateringsfunktionen för balansräkning
+formatera_rader(ws_bs)
 
 ## Formatering: increase indent på alla kontorader i BS reported
 format_account_names(ws_bs)
@@ -1355,6 +1417,29 @@ animation_thread.start()
 
 # Spara alla ändringar
 wb.save(f'sie_to_pnl/data/{output_filename}')
+
+
+## Sortera sheets i rätt ordning (behöver göras efter att allt det övriga är sparat)
+
+from openpyxl import load_workbook
+
+# Ladda arbetsboken
+wb = load_workbook(f'sie_to_pnl/data/{output_filename}')
+
+# Lista med sheetet vi vill flytta till början i denna ordning
+önskad_ordning = ['P&L (reported)', 'BS (reported)', 'Accounts', 'IB']
+
+# Flytta sheeten till början i rätt ordning
+for sheet_namn in reversed(önskad_ordning):  # Reversed för att bibehålla ordningen när vi sätter in
+    if sheet_namn in wb.sheetnames:
+        sheet = wb[sheet_namn]
+        wb._sheets.remove(sheet)  # Ta bort sheeet från den nuvarande positionen
+        wb._sheets.insert(0, sheet)  # Sätt in sheetet först i listan
+
+# Spara alla ändringar
+wb.save(f'sie_to_pnl/data/{output_filename}')
+
+
 
 # Stoppa animationen och visa att processen är klar
 stop_animation.set()
