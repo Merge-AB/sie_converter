@@ -17,9 +17,10 @@ res_df = pd.read_csv('sie_to_pnl/data/RES.csv', encoding='ISO-8859-1')
 # Hämta unika kontonummer från IB.csv och RES.csv
 ib_accounts = ib_df['konto'].unique()
 res_accounts = res_df['konto'].unique()
+konto_accounts = konto_df['kontonummer'].unique()
 
 # Kombinera alla kontonummer från IB och RES
-all_accounts = pd.concat([pd.Series(ib_accounts), pd.Series(res_accounts)]).unique()
+all_accounts = pd.concat([pd.Series(ib_accounts), pd.Series(res_accounts), pd.Series(konto_accounts)]).unique()
 
 # Filtrera konto_df baserat på de kombinerade kontonumren från IB och RES
 filtered_konto_df = konto_df[konto_df['kontonummer'].isin(all_accounts)]
@@ -1398,7 +1399,18 @@ sys.stdout.write("Done!\n")
 
 
 
+## Testlogg
+# Renewed funkar 2022, 2023 funkar
+# Mockberg funkar 2021 men för 2022 (IB saknas)
 
+## BUGG LOGG
+# Transactionsdatan tar inte med alla konton i aggregeringen. Konton som saknas:
+
+# 1012	Balanserade utgifter för programvaror
+# 1419	Förändring av lager av råvaror
+# 1985	TransferWise Ltd.
+# 2652	Redovisningskonto för OSS
+# 2671	Utgående moms på försäljning inom EU OSS
 
 
 
