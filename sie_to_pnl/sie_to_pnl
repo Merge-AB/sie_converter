@@ -10,7 +10,7 @@ import threading
 import re
 
 # Läs in CSV-filer
-ib_df = pd.read_csv('sie_to_pnl/data/IB.csv', encoding='ascii')
+ib_df = pd.read_csv('sie_to_pnl/data/IB.csv', encoding='ascii', usecols=[0, 1, 2, 3])
 konto_df = pd.read_csv('sie_to_pnl/data/KONTO.csv', encoding='ISO-8859-1')
 res_df = pd.read_csv('sie_to_pnl/data/RES.csv', encoding='ISO-8859-1')
 
@@ -294,29 +294,6 @@ last_row_bs = ws_pl_1000_2999.max_row
 first_col_bs = 5  # E
 last_col_bs = first_col_bs + len(unique_months) - 2  # -2 eftersom vi hoppar över första månaden
 
-# for row in range(first_row_bs, last_row_bs + 1):
-#     for col in range(first_col_bs, last_col_bs + 1):
-#         col_letter = get_column_letter(col)
-#         formula = f"=SUMIFS('Transaction {year_short} - Aggregated'!$D:$D,'Transaction {year_short} - Aggregated'!A:A,'BS (reported)'!$B{row},'Transaction {year_short} - Aggregated'!C:C,'BS (reported)'!{col_letter}$4)"
-#         ws_pl_1000_2999.cell(row=row, column=col).value = formula
-
-# # Steg 2: Lägg till SUMIFS-formeln från "IB" sheetet i kolumn D och fyll ner för alla konton i BS (reported)
-# target_column = 4  # Kolumn D (kolumn 4)
-
-# for row in range(first_row_bs, last_row_bs + 1):
-#     # Formel som ska läggas i varje cell i kolumn D från rad 7 och nedåt
-#     formula = f"=SUMIFS(IB!D:D, IB!$B:$B, 0, IB!$C:$C, 'BS (reported)'!$B{row})"
-    
-#     # Lägg till formeln i cellen i kolumn D
-#     ws_pl_1000_2999.cell(row=row, column=target_column).value = formula
-
-# # Steg 3: Formatera alla celler i BS-sheetet från rad 6 och kolumn D nedåt och åt sidan med formatet #,##0;(#,##0);-
-# for row in range(6, ws_pl_1000_2999.max_row + 1):
-#     for col in range(4, ws_pl_1000_2999.max_column + 1):  # Startar på kolumn D (kolumn 4)
-#         cell = ws_pl_1000_2999.cell(row=row, column=col)
-#         cell.number_format = '#,##0;(#,##0);-'
-
-
 # Definiera borders med en tunn topp och en tjock botten
 custom_border = Border(top=Side(style='thin'), bottom=Side(style='thick'))
 
@@ -436,14 +413,6 @@ pl_max_row = get_max_row()
 # Använd den dynamiska funktionen för att uppdatera SUMIFS-formlerna för varje sektion
 apply_sumifs_formulas(first_3000_row + 1, last_3899_row + 1, exclude_rows=[sales_row])
 apply_sumifs_formulas(first_3900_row + 1, last_3999_row + 1, exclude_rows=[other_income_row])
-
-
-
-
-
-
-
-
 
 
 # Funktion för att få den aktuella sista raden
@@ -585,7 +554,6 @@ apply_sumifs_formulas(first_5000_row + 1, last_7799_row + 1, exclude_rows=[opera
 
 
 
-
 # Sektion för 7800-7899-konton (D&A)
 first_7800_row = None
 last_7899_row = None
@@ -649,12 +617,6 @@ pl_max_row = get_max_row()
 
 # Använd den dynamiska funktionen för att uppdatera SUMIFS-formlerna för varje sektion
 apply_sumifs_formulas(first_7800_row + 1, last_7899_row + 1, exclude_rows=[da_row])
-
-
-
-
-
-
 
 
 
@@ -723,16 +685,6 @@ apply_sumifs_formulas(first_7900_row + 1, last_8799_row + 1, exclude_rows=[finan
 
 
 
-
-
-
-
-
-
-
-
-
-
 # Sektion för 8800-8898-konton (Year-end adjustments och tax)
 first_8800_row = None
 last_8898_row = None
@@ -795,17 +747,10 @@ if last_8898_row is not None:
 pl_max_row = get_max_row()
 
 # Använd den dynamiska funktionen för att uppdatera SUMIFS-formlerna för varje sektion
-apply_sumifs_formulas(first_8800_row + 1, last_8898_row + 1, exclude_rows=[year_end_adjustments_row])
-
-
-
-
-
-
-
-
-
-
+if first_8800_row is not None and last_8898_row is not None:
+    apply_sumifs_formulas(first_8800_row + 1, last_8898_row + 1, exclude_rows=[year_end_adjustments_row])
+else:
+    print("Skipping SUMIFS formulas for Year-end adjustments and tax as the rows were not found.")
 
 
 
@@ -828,7 +773,7 @@ if first_8999_row is not None and last_8999_row is not None:
     for row in range(first_8999_row, last_8999_row + 1):
         for col in range(4, ws_pl.max_column + 1):  # Starta på kolumn D (kolumn 4)
             # Uppdatera formeln så att den refererar till rätt rad
-            transaction_sheet = "'Transaction 21 - Aggregated'"
+            transaction_sheet = f"'Transaction {year_short} - Aggregated'"
             formula = (
                 f"=SUMIFS({transaction_sheet}!$D:$D,"
                 f"{transaction_sheet}!A:A,'P&L (reported)'!$B{row},"
