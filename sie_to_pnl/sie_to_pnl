@@ -849,7 +849,6 @@ last_col_pl = ws_pl.max_column  # Automatisk identifiering av sista kolumnen med
 # Kör funktionen för att skapa årssummor i P&L
 skapa_arsummor_pl(ws_pl, first_row_pl, first_col_pl, last_col_pl)
 
-
 ## Formatera rad 2, 3 och 4
 
 # Funktion för att hitta sista kolumnen med ett värde som liknar ett år eller år-månad i rad 4
@@ -1072,6 +1071,10 @@ if last_liabilities_row is not None:
 if last_equity_row is not None:
     huvudsummeringsrader(ws_bs, last_equity_row, "Equity")
 
+    # Lägg till raden "Årets resultat ackumulerat" precis innan "Equity" (specialraden för att det ska balansera)
+    ws_bs.insert_rows(last_equity_row+1)  # Infoga en ny rad precis innan "Equity"
+    ws_bs.cell(row=last_equity_row+1, column=3).value = "Årets resultat ackumulerat"
+
 # Kontroll för Total assets
 if last_total_assets_row is not None:
     huvudsummeringsrader(ws_bs, last_total_assets_row, "Total assets", insert_blank_row=False)
@@ -1080,12 +1083,12 @@ if last_total_assets_row is not None:
 if last_fixed_assets_row is not None:
     huvudsummeringsrader(ws_bs, last_fixed_assets_row, "Fixed assets", insert_blank_row=False)
 
-# STEG 3: skapa de faktiska summaformlerna för delsummeringsrader
+## STEG 3: skapa de faktiska summaformlerna för delsummeringsrader
 
 from openpyxl.utils import get_column_letter
 
 # Funktion för att skapa summor för en enda delsummeringsrad (kan användas för olika rubriker)
-def skapa_huvudsummeringar(ws, max_column, asset_type):
+def skapa_huvudsummeringar(ws, max_column, asset_type, include_ar_accumulerat=False):
     first_row = None  # Standardvärde om rubriken inte hittas
 
     # Hitta raden där det står "asset_type" i kolumn C
@@ -1107,12 +1110,28 @@ def skapa_huvudsummeringar(ws, max_column, asset_type):
         end_row += 1
     end_row -= 1  # Justera för att inte inkludera den tomma cellen
 
+    # Kontrollera om "Årets resultat ackumulerat" ska inkluderas
+    ar_accumulerat_row = None
+    if include_ar_accumulerat:
+        for row in range(1, ws.max_row + 1):
+            if ws.cell(row=row, column=3).value == "Årets resultat ackumulerat":
+                ar_accumulerat_row = row
+                break
+
+
+
     # Kontrollera om intervallet är giltigt
     if end_row >= start_row:
         for col in range(4, max_column + 1):  # Kolumn D och framåt
             start_letter = get_column_letter(col)
             end_letter = get_column_letter(col)
-            formula = f"=SUM({start_letter}{start_row}:{end_letter}{end_row})"
+
+            # Skapa SUM-formeln och inkludera Årets resultat ackumulerat om det behövs
+            if ar_accumulerat_row is not None:
+                formula = f"=SUM({start_letter}{start_row}:{end_letter}{end_row},{start_letter}{ar_accumulerat_row})"
+            else:
+                formula = f"=SUM({start_letter}{start_row}:{end_letter}{end_row})"
+
             cell = ws.cell(row=first_row, column=col)
             cell.value = formula
 
@@ -1131,7 +1150,8 @@ skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Short-term investments")
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Cash and cash equivalents")
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Other equity")
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Restricted equity")
-skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Non-restricted equity")
+# Non-restricted equity ska inkludera "Årets resultat ackumulerat"
+skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Non-restricted equity", include_ar_accumulerat=True)
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Untaxed reserves")
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Provisions")
 skapa_huvudsummeringar(ws_bs, ws_bs.max_column, "Long-term debt")
@@ -1245,6 +1265,66 @@ def applicera_sumifs_och_nummerformat(ws, first_row, first_col, last_col, year_s
 # Kör funktionen
 applicera_sumifs_och_nummerformat(ws_bs, first_row_bs, first_col_bs, last_col_bs, year_short)
 
+
+
+
+## Skapa formler för Årets resultat ackumulerat, specialhantering
+
+def skapa_formler_aret_resultat_accumulerat(ws_bs, ws_pl):
+    # Hitta raden där "Årets resultat ackumulerat" finns i BS
+    ar_ack_row = None
+    for row in range(1, ws_bs.max_row + 1):
+        if ws_bs.cell(row=row, column=3).value == "Årets resultat ackumulerat":  # Kolumn C i BS
+            ar_ack_row = row
+            break
+
+    if ar_ack_row is None:
+        print("Årets resultat ackumulerat hittades inte i BS")
+        return
+
+    # Hitta raden där "Net income" finns i "P&L (reported)"
+    net_income_row = None
+    for row in range(1, ws_pl.max_row + 1):
+        if ws_pl.cell(row=row, column=3).value == "Net income":  # Kolumn C i P&L (reported)
+            net_income_row = row
+            break
+
+    if net_income_row is None:
+        print("Net income hittades inte i P&L (reported)")
+        return
+
+    # Skapa formler i balansräkningens "Årets resultat ackumulerat"-rad
+    for col in range(4, ws_bs.max_column + 1):  # Kolumn D och framåt
+        col_letter = get_column_letter(col)  # Hämta kolumnbokstaven för balansräkningen
+        
+        # Kontrollera om cellen på rad 4 slutar med "12" (dvs en decembermånad)
+        cell_value = str(ws_bs.cell(row=4, column=col).value)
+        if cell_value.endswith("12"):            
+            continue  # Hoppa över denna kolumn om det är en decembermånad
+
+        if col == 4:
+            # Första kolumnen (D) får bara en direkt referens till P&L
+            formula = f"=-'P&L (reported)'!{col_letter}{net_income_row}"
+        else:
+            # Efterföljande kolumner (utom december) får en summering av nuvarande och föregående cell
+            prev_col_letter = get_column_letter(col - 1)  # Hämta kolumnen till vänster
+            formula = f"=-'P&L (reported)'!{col_letter}{net_income_row} + {prev_col_letter}{ar_ack_row}"
+        
+        ws_bs.cell(row=ar_ack_row, column=col).value = formula  # Tilldela formeln till cellen i BS
+        
+# Kör funktionen för att hitta "Årets resultat ackumulerat" och skapa formler
+skapa_formler_aret_resultat_accumulerat(ws_bs, ws_pl)
+
+
+
+
+
+
+
+
+
+
+
 # STEG 6: skapa årssummor
 
 # Funktion för att skapa summakolumner för helåret
@@ -1346,6 +1426,13 @@ formatera_rader(ws_bs)
 ## Formatering: increase indent på alla kontorader i BS reported
 format_account_names(ws_bs)
 
+# Efter att format_account_names har körts, gör den extra indenten för "Årets resultat ackumulerat"
+for row in ws_bs.iter_rows(min_row=5, max_row=ws_bs.max_row):
+    account_title_cell = row[2]  # Kolumn C, där kontonamnet finns
+    if account_title_cell.value == "Årets resultat ackumulerat":
+        # Om vi hittar "Årets resultat ackumulerat", öka indragningen
+        account_title_cell.alignment = Alignment(indent=1)
+
 # Funktion för att visa animationen
 def animate():
     animation = "|/-\\"
@@ -1404,13 +1491,7 @@ sys.stdout.write("Done!\n")
 # Mockberg funkar 2021 men för 2022 (IB saknas)
 
 ## BUGG LOGG
-# Transactionsdatan tar inte med alla konton i aggregeringen. Konton som saknas:
 
-# 1012	Balanserade utgifter för programvaror
-# 1419	Förändring av lager av råvaror
-# 1985	TransferWise Ltd.
-# 2652	Redovisningskonto för OSS
-# 2671	Utgående moms på försäljning inom EU OSS
 
 
 
