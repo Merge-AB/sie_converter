@@ -194,6 +194,9 @@ for col in ws_pl_1000_2999.columns:
 # Lägg till ny funktion för att läsa TRANSACTIONS.csv och skapa nytt sheet
 transactions_df = pd.read_csv('sie_to_pnl/data/TRANSACTIONS.csv', encoding='ISO-8859-1')
 
+# Filtrera endast de rader där 'trans_typ' är 'N' (B är exempelvis budget, ska ej med)
+transactions_df = transactions_df[transactions_df['trans_typ'] == 'N']
+
 # Omvandla 'ver_datum' till formatet YYYY-MM-DD
 transactions_df['ver_datum'] = pd.to_datetime(transactions_df['ver_datum'].astype(str), format='%Y%m%d').dt.strftime('%Y-%m-%d')
 
