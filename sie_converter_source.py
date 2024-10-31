@@ -134,6 +134,11 @@ class Master:
 			for x in fixed_line[1]:
 				final_lista.append(x)
 
+			# Format date
+			date = final_lista[2]
+			final_lista[2] = f"{date[:4]}-{date[4:]}"
+			print(final_lista)
+
 			outputWriter_PSALDO.writerow(final_lista)
 
 	def KONTO(self):
@@ -410,7 +415,12 @@ class Master:
 			if konto.startswith('3') or konto.startswith('4') or konto.startswith('5') or konto.startswith('6') or konto.startswith('7') or konto.startswith('8') or konto.startswith('9'):
 				belopp_2 = '-'+belopp_2
 			brackets_list.append(belopp_2)
-
+			
+			
+			# Format date
+			date = brackets_list[2]
+			brackets_list[2] = f"{date[:4]}-{date[4:6]}-{date[6:]}"
+			
 			# Skriver över listan till outputfilen
 			outputWriter1.writerow(brackets_list)
 
@@ -445,6 +455,7 @@ for file in os.listdir(directory):
 				m.KONTO()
 				m.VER()
 				m.TRANS()
+
 
 #stäng alla filer
 outputFil1.close()
