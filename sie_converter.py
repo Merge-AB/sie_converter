@@ -5,9 +5,7 @@ import csv
 import openpyxl
 import datetime
 
-
 # Sätter directory
-
 
 path = os.getcwd()
 print(path)
@@ -19,51 +17,6 @@ directory2 = path + "\\Output-filer"
 os.chdir(directory2)
 os.getcwd() 
 
-print("initiating...")
-
-#Skapar en CSV fil
-outputFil1 = open("TRANSACTIONS.csv", "w", newline="", encoding='ANSI')
-outputWriter1 = csv.writer(outputFil1, delimiter=",")
-#Skriver toppraderna
-trans_topp = ['serie', 'ver_nr', 'ver_datum', 'ver_text', 'reg_datum', 'konto', 'belopp', 'kostnadsställe', 'trans_typ', 'belopp_2']
-outputWriter1.writerow(trans_topp)
-
-#Skapar en CSV fil
-outputFil_UB = open("UB.csv", "w", newline="", encoding='ANSI')
-outputWriter_UB = csv.writer(outputFil_UB, delimiter=",")
-#Skriver toppraderna
-ub_topp = ['DEL', 'DEL', 'konto','UB', 'DEL']
-outputWriter_UB.writerow(ub_topp)
-
-#Skapar en CSV fil
-outputFil_IB = open("IB.csv", "w", newline="", encoding='ANSI')
-outputWriter_IB = csv.writer(outputFil_IB, delimiter=",")
-#Skriver toppraderna
-ib_topp = ['DEL', 'DEL', 'konto', 'IB']
-outputWriter_IB.writerow(ib_topp)
-
-#Skapar en CSV fil
-outputFil_RES = open("RES.csv", "w", newline="", encoding='ANSI')
-outputWriter_RES = csv.writer(outputFil_RES, delimiter=",")
-#Skriver toppraderna
-res_topp = ['DEL', 'DEL', 'konto','resultat', 'DEL']
-outputWriter_RES.writerow(res_topp)
-
-#Skapar en CSV fil
-outputFil_PSALDO = open("PSALDO.csv", "w", newline="", encoding='ANSI')
-outputWriter_PSALDO = csv.writer(outputFil_PSALDO, delimiter=",")
-#Skriver toppraderna
-psaldo_topp = ['DEL', 'DEL', 'datum', 'konto', 'UB', 'DEL']
-outputWriter_PSALDO.writerow(psaldo_topp)
-
-#Skapar en CSV fil
-outputFil_KONTO = open("KONTO.csv", "w", newline="", encoding='ANSI')
-outputWriter_KONTO = csv.writer(outputFil_KONTO, delimiter=",")
-#Skriver toppraderna
-konto_topp = ['kontonummer','kontonamn']
-outputWriter_KONTO.writerow(konto_topp)
-
-print('output files created...')
 
 class Master:
 	def __init__(self, line, outputWriter_UB, outputWriter_IB, outputWriter_RES, outputWriter_PSALDO, outputWriter_KONTO, outputWriter1):
@@ -137,7 +90,6 @@ class Master:
 			# Format date
 			date = final_lista[2]
 			final_lista[2] = f"{date[:4]}-{date[4:]}"
-			print(final_lista)
 
 			outputWriter_PSALDO.writerow(final_lista)
 
@@ -435,12 +387,62 @@ print('---------------------------------------------------------------')
 # Loopar genom alla rader
 # Måste loopa igenom rätt directory. Om vi inte sätter os.chdir(directory) så loopar den igenom directory2.
 os.chdir(directory)
-for file in os.listdir(directory):
-	#print(file)
+print(os.listdir(directory + "\\Input-filer"))
+for file in os.listdir(directory + "\\Input-filer"):
 	if file.endswith(".se") or file.endswith(".SE") or file.endswith(".SI") or file.endswith(".si"):
-		print(file)
+
+		print("initiating...")
+
+		file_name = file.split(".")[0]
+		folder_name = directory + "\\Output-filer" + "\\" + file_name
+		os.makedirs(folder_name, exist_ok=True)
+
+		#Skapar en CSV fil
+		outputFil1 = open(f"{folder_name}/TRANSACTIONS.csv", "w", newline="", encoding='ANSI')
+		outputWriter1 = csv.writer(outputFil1, delimiter=",")
+		#Skriver toppraderna
+		trans_topp = ['serie', 'ver_nr', 'ver_datum', 'ver_text', 'reg_datum', 'konto', 'belopp', 'kostnadsställe', 'trans_typ', 'belopp_2']
+		outputWriter1.writerow(trans_topp)
+
+		#Skapar en CSV fil
+		outputFil_UB = open(f"{folder_name}/UB.csv", "w", newline="", encoding='ANSI')
+		outputWriter_UB = csv.writer(outputFil_UB, delimiter=",")
+		#Skriver toppraderna
+		ub_topp = ['DEL', 'DEL', 'konto','UB', 'DEL']
+		outputWriter_UB.writerow(ub_topp)
+
+		#Skapar en CSV fil
+		outputFil_IB = open(f"{folder_name}/IB.csv", "w", newline="", encoding='ANSI')
+		outputWriter_IB = csv.writer(outputFil_IB, delimiter=",")
+		#Skriver toppraderna
+		ib_topp = ['DEL', 'DEL', 'konto', 'IB']
+		outputWriter_IB.writerow(ib_topp)
+
+		#Skapar en CSV fil
+		outputFil_RES = open(f"{folder_name}/RES.csv", "w", newline="", encoding='ANSI')
+		outputWriter_RES = csv.writer(outputFil_RES, delimiter=",")
+		#Skriver toppraderna
+		res_topp = ['DEL', 'DEL', 'konto','resultat', 'DEL']
+		outputWriter_RES.writerow(res_topp)
+
+		#Skapar en CSV fil
+		outputFil_PSALDO = open(f"{folder_name}/PSALDO.csv", "w", newline="", encoding='ANSI')
+		outputWriter_PSALDO = csv.writer(outputFil_PSALDO, delimiter=",")
+		#Skriver toppraderna
+		psaldo_topp = ['DEL', 'DEL', 'datum', 'konto', 'UB', 'DEL']
+		outputWriter_PSALDO.writerow(psaldo_topp)
+
+		#Skapar en CSV fil
+		outputFil_KONTO = open(f"{folder_name}/KONTO.csv", "w", newline="", encoding='ANSI')
+		outputWriter_KONTO = csv.writer(outputFil_KONTO, delimiter=",")
+		#Skriver toppraderna
+		konto_topp = ['kontonummer','kontonamn']
+		outputWriter_KONTO.writerow(konto_topp)
+
+		print('output files created...')
+
 		# Öppnar filen
-		with open(file, "r", encoding='cp437') as f:
+		with open(f"Input-filer/{file}", "r", encoding='cp437') as f:
 			content = f.readlines()
 			for line in content:
 				m = Master(line, outputWriter_UB, outputWriter_IB, outputWriter_RES, outputWriter_PSALDO, outputWriter_KONTO, outputWriter1)
